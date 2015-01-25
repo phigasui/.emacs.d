@@ -9,9 +9,13 @@
   (let (parens-require-spaces)
     (insert-pair)))
 
-(defun insert-env (env)
-  (interactive "sexec-env: ")
-  (insert (concat "#! " (shell-command-to-string (concat "which " env)) "\n")))
+;; (defun insert-env (env)
+;;   (interactive "sexec-env: ")
+;;   (insert (concat "#! " (shell-command-to-string (concat "which " env)) "\n")))
+
+(defun insert-env ()
+  (interactive)
+  (insert "#! /usr/bin/env "))
 
 (defmacro define-keys (mode-map &rest body)
   `(progn
@@ -71,6 +75,8 @@
 (show-paren-mode t)
 (setq delete-auto-save-files t)
 (which-function-mode t)
+(line-number-mode t)
+(column-number-mode t)
 
 (add-hook 'after-save-hook
           'executable-make-buffer-file-executable-if-script-p)
