@@ -34,13 +34,17 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(default ((t (:background "color-18" :distant-foreground "brightwhite"))))
+ '(default ((t (:inherit nil :stipple nil :background "color-19" :foreground "unspecified-fg" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal :height 1 :width normal :foundry "default" :family "default"))))
+ '(bold ((t (:foreground "brightred"))))
+ '(buffer-menu-buffer ((t (:background "brightcyan" :distant-foreground "brightwhite"))))
  '(hl-line ((t (:background "color-19"))))
+ '(linum ((t (:inherit default))))
  '(minibuffer-prompt ((t (:foreground "brightwhite"))))
  '(mode-line ((t (:background "brightcyan" :foreground "black"))))
  '(region ((t (:background "color-21"))))
- '(vhl/default-face ((t (:background "brightcyan"))))
- '(wb-line-number-face ((t (:foreground "#333")))))
+ '(tooltip ((t (:inherit variable-pitch :background "brightyellow" :foreground "black"))))
+ '(vhl/default-face ((t (:background "color-33"))))
+ '(wb-line-number-face ((t (:foreground "color-21")))))
 
 (require 'whitespace)
 (global-whitespace-mode t)
@@ -137,4 +141,5 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- )
+ '(global-linum-mode t)
+ '(linum-format "%5d |"))
