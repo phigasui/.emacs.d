@@ -9,7 +9,6 @@
              '("melpa" . "http://melpa.milkbox.net/packages/") t)
 ;; (setq url-http-attempt-keepalives nil) ;;To fix MELPA problem.
 
-
 ;;;; function ;;;;
 (defun electric-pair ()
   (interactive)
@@ -26,40 +25,37 @@
                    `(define-key ,mode-map ,@arg)) body)))
 
 
-;;;; design ;;;;
-(set-face-background 'region "#DDD")
+;;;; face ;;;;
+(require 'volatile-highlights)
+(volatile-highlights-mode t)
+(global-hl-line-mode t)
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(default ((t (:background "color-18" :distant-foreground "brightwhite"))))
+ '(hl-line ((t (:background "color-19"))))
+ '(minibuffer-prompt ((t (:foreground "brightwhite"))))
+ '(mode-line ((t (:background "brightcyan" :foreground "black"))))
+ '(region ((t (:background "color-21"))))
+ '(vhl/default-face ((t (:background "brightcyan"))))
+ '(wb-line-number-face ((t (:foreground "#333")))))
 
-;; (require 'cl)
+(require 'whitespace)
 (global-whitespace-mode t)
 (setq whitespace-display-mappings
       '((space-mark ?\ [?\ ])
         (newline-mark ?\n [?\n])))
-(set-face-background 'whitespace-space "#8A8A8A")
 
-(setq backup-inhibited t)
-(defface hlline-face
-  '((((class color)
-      (background dart))
-     (:background "#aaa"))
-    (((class color)
-      (background light))
-     (:background "#999"))
-    (t
-     ()))
-  "*Face used by hl-line.")
-(setq hl-line-face 'hlline-face)
-(global-hl-line-mode t)
+(setq whitespace-action '(auto-cleanup))
+(setq whitespace-space-regexp "\\(\u3000\\)")
+(set-face-background 'whitespace-space "red")
+(set-face-background 'whitespace-tab "yellow")
 
-(require 'wb-line-number)
-(wb-line-number-toggle)
-(custom-set-faces
- '(wb-line-number-face
-   ((t
-     (:foreground "#333"))))
- ;; '(wb-line-number-scroll-bar-face
- ;;   ((t
- ;;     (:foreground "red" :bakground "red"))))
- )
+(require 'linum)
+(global-linum-mode t)
+(setq linum-format "%5d |")
 
 
 ;;;; keybinds ;;;;
@@ -72,7 +68,6 @@
   ("\C-xg" 'goto-line)
   ("\C-ce" 'insert-env))
 
-
 ;;;; other conf ;;;;
 (setq-default tab-width 4 indent-tabs-mode nil)
 (show-paren-mode t)
@@ -80,6 +75,8 @@
 (which-function-mode t)
 (line-number-mode t)
 (column-number-mode t)
+(setq fill-column 79)
+(setq backup-inhibited t)
 
 (add-hook 'after-save-hook
           'executable-make-buffer-file-executable-if-script-p)
@@ -124,43 +121,20 @@
     ))
 
 
-
 (add-to-list 'load-path "~/.emacs.d/emacs-swoop")
 (require 'swoop)
 (global-set-key (kbd "C-c o") 'swoop)
 
-;; rubikitch
-;; auto-install.elの設定
 (add-to-list 'load-path "~/.emacs.d/auto-install")
-(require 'auto-install)
-;; (auto-install-update-emacswiki-package-name t)
-;; (auto-install-compatibility-setup)
-;; (setq ediff-window-setup-function 'ediff-setup-windows-plain)
-;; 試行錯誤用ファイルを開くための設定
 (require 'open-junk-file)
-;; C-x C-zで試行錯誤ファイルを開く
 (global-set-key (kbd "C-x C-z") 'open-junk-file)
-;; 式の評価結果を注釈するための設定
-;; (require 'lispxmp)
-;; emacs-lisp-modeでC-c C-dを押すと注釈される
-;; (define-key emacs-lisp-mode-map (kbd "C-c C-d") 'lispxmp)
-;; 括弧の対応を保持して編集する設定
-;; (require 'paredit)
-;; (add-hook 'emacs-lisp-mode-hook 'enable-paredit-mode)
-;; (add-hook 'lisp-interaction-mode-hook 'enable-paredit-mode)
-;; (add-hook 'lisp-mode-hook 'enable-paredit-mode)
-;; (add-hook 'ielm-mode-hook 'enable-paredit-mode)
+
 (require 'auto-async-byte-compile)
-;; 自動バイトコンパイルを無効にするファイル名の正規表現
 (setq auto-async-byte-compile-exclude-files-regexp "/junk/")
 (add-hook 'emacs-lisp-mode-hook 'enable-auto-async-byte-compile-mode)
-;; (add-hook 'emacs-lisp-mode-hook 'turn-on-eldoc-mode)
-;; (add-hook 'lisp-interaction-mode-hook 'turn-on-eldoc-mode)
-;; (add-hook 'ielm-mode-hook 'turn-on-eldoc-mode)
-;; (setq eldoc-idle-delay 0.2) すぐに表示したい
-;; (setq eldoc-minor-mode-string "") モードラインにElDocと表示しない
-
-;; find-functionをキー割り当てする
-;; (find-function-setup-keys)
-
-;; (package-refresh-contents)
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
