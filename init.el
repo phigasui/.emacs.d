@@ -35,11 +35,7 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(default ((t (:inherit nil :stipple
- nil :background "color-19" :foreground "unspecified-fg" :inverse-video
- nil :box nil :strike-through nil :overline nil :underline
- nil :slant normal :weight normal :height 1 :width
- normal :foundry "default" :family "default"))))
+ '(default ((t (:inherit nil :stipple nil :background "color-19" :foreground "unspecified-fg" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal :height 1 :width normal :foundry "default" :family "default"))))
  '(bold ((t (:foreground "brightred"))))
  '(buffer-menu-buffer ((t (:background "brightcyan" :distant-foreground "brightwhite"))))
  '(hl-line ((t (:background "color-20"))))
@@ -47,8 +43,8 @@
  '(linum ((t (:inherit default))))
  '(minibuffer-prompt ((t (:foreground "brightwhite"))))
  '(mode-line ((t (:background "brightcyan" :foreground "black"))))
- '(region ((t (:background "color-21")))) '(tooltip ((t (:inherit
- variable-pitch :background "brightyellow" :foreground "black"))))
+ '(region ((t (:background "color-21"))))
+ '(tooltip ((t (:inherit variable-pitch :background "brightyellow" :foreground "black"))))
  '(vhl/default-face ((t (:background "color-33"))))
  '(wb-line-number-face ((t (:foreground "color-21"))))
  '(which-func ((t (:foreground "color-17"))))
@@ -74,8 +70,15 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(global-linum-mode t)
- '(linum-format "%5d |"))
-
+ '(linum-format "%5d |")
+ '(web-mode-attr-indent-offset 2)
+ '(web-mode-code-indent-offset 4)
+ '(web-mode-css-indent-offset 2)
+ '(web-mode-enable-auto-closing t)
+ '(web-mode-enable-auto-expanding t)
+ '(web-mode-enable-auto-indentation t)
+ '(web-mode-enable-current-column-highlight t)
+ '(web-mode-enable-current-element-highlight t))
 
 ;;;; keybinds ;;;;
 (define-keys global-map
@@ -141,6 +144,14 @@
     ;; (define-key python-mode-map "(" 'electric-pair)
     ))
 
+(require 'web-mode)
+(setq auto-mode-alist
+      (cons (cons "\\.html$" 'web-mode) auto-mode-alist))
+(setq web-mode-markup-indent-offset 2)
+(setq web-mode-ac-sources-alist
+      '(("html" . (ac-source-words-in-buffer ac-source-abbrev))))
+(setq web-mode-enable-current-element-highlight t)
+(setq web-mode-enable-current-column-highlight t)
 
 ;;;; others ;;;;
 (add-to-list 'load-path "~/.emacs.d/emacs-swoop")
