@@ -1,23 +1,19 @@
 
-;; Added by Package.el.  This must come before configurations of
-;; installed packages.  Don't delete this line.  If you don't want it,
-;; just comment it out by adding a semicolon to the start of the line.
-;; You may delete these explanatory comments.
-
+;;; Code:
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
-   (quote
-    (markdown-preview-mode markdown-mode open-junk-file tide git-gutter-fringe rubocop eglot terraform-mode find-file-in-project flycheck counsel yaml-mode slim-mode magit web-mode))))
+   '(markdown-preview-mode markdown-mode open-junk-file tide git-gutter-fringe rubocop eglot terraform-mode find-file-in-project flycheck counsel yaml-mode slim-mode magit web-mode)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  )
+
 
 ;; Package Managements
 (require 'package)
@@ -38,19 +34,19 @@
 (global-display-line-numbers-mode)
 
 
-;;;; Global Key Binds
+;; Global Key Binds
 (define-key global-map (kbd "C-h" ) 'delete-backward-char)
 (define-key global-map (kbd "M-x") 'counsel-M-x)
 (define-key global-map (kbd "C-s") 'swiper-isearch)
-(define-key global-map (kbd "C-c C-g") 'counsel-projectile-git-grep)
-(define-key global-map (kbd "C-c C-f") 'counsel-projectile-find-file)
 (define-key global-map (kbd "C-r") 'swiper-isearch-backward)
+(define-key global-map (kbd "C-c g") 'counsel-git-grep)
+(define-key global-map (kbd "C-c f") 'counsel-find-file)
 
 
 ;; ivy Settings
 (ivy-mode 1)
-(defvar ivy-use-virtual-buffers t)
-(defvar ivy-count-format "(%d/%d) ")
+(setq-default ivy-use-virtual-buffers t)
+(setq-default ivy-count-format "(%d/%d) ")
 
 
 ;; company Settings
@@ -83,8 +79,8 @@
 (add-hook 'ruby-mode-hook
   '(lambda ()
      (setq flycheck-checker 'ruby-rubocop)))
-(custom-set-variables
- '(ruby-insert-encoding-magic-comment nil))
+(setq-default ruby-insert-encoding-magic-comment nil)
+
 
 
 ;; git-gutter Settings
@@ -108,6 +104,7 @@
 
 
 ;; web-mode Settings
+(setq indent-tabs-mode nil)
 (setq web-mode-markup-indent-offset 2)
 (setq web-mode-css-indent-offset 2)
 (setq web-mode-code-indent-offset 2)
@@ -120,3 +117,5 @@
               (tide-setup))))
 
 (flycheck-add-mode 'typescript-tslint 'web-mode)
+
+;;; init.el ends here
