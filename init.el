@@ -11,7 +11,7 @@
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
    (quote
-    (git-gutter-fringe rubocop eglot terraform-mode counsel-projectile find-file-in-project flycheck counsel yaml-mode slim-mode magit web-mode))))
+    (markdown-preview-mode markdown-mode open-junk-file tide git-gutter-fringe rubocop eglot terraform-mode find-file-in-project flycheck counsel yaml-mode slim-mode magit web-mode))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -19,7 +19,7 @@
  ;; If there is more than one, they won't work right.
  )
 
-;;;; Package Managements
+;; Package Managements
 (require 'package)
 (setq package-archives
       '(("melpa" . "https://melpa.org/packages/")
@@ -33,7 +33,7 @@
     (package-install package)))
 
 
-;;;; Global Settings
+;; Global Settings
 (electric-pair-mode t)
 (global-display-line-numbers-mode)
 
@@ -44,15 +44,16 @@
 (define-key global-map (kbd "C-s") 'swiper-isearch)
 (define-key global-map (kbd "C-c C-g") 'counsel-projectile-git-grep)
 (define-key global-map (kbd "C-c C-f") 'counsel-projectile-find-file)
+(define-key global-map (kbd "C-r") 'swiper-isearch-backward)
 
 
-;;;; ivy Settings
+;; ivy Settings
 (ivy-mode 1)
 (defvar ivy-use-virtual-buffers t)
 (defvar ivy-count-format "(%d/%d) ")
 
 
-;;;; Company Settings
+;; company Settings
 (require 'company)
 (global-company-mode)
 (setq company-idle-delay 0)
@@ -63,12 +64,12 @@
 (define-key company-active-map (kbd "C-h") nil)
 
 
-;;;; Eglot Settings
+;; eglot Settings
 (require 'eglot)
 (add-hook 'ruby-mode-hook 'eglot-ensure)
+(add-hook 'web-mode-hook 'eglot-ensure)
 
-
-;;;; Flycheck Settings
+;; flycheck Settings
 (require 'flycheck)
 (global-flycheck-mode)
 (setq flycheck-indication-mode 'left-margin)
@@ -76,25 +77,22 @@
 (setq flycheck-disabled-checkers '(emacs-lisp-checkdoc))
 
 
-;;;; Ruby Settings
+;; Ruby Settings
 (require 'rubocop)
 (add-hook 'ruby-mode-hook 'rubocop-mode)
 (add-hook 'ruby-mode-hook
   '(lambda ()
-    (setq flycheck-checker 'ruby-rubocop)))
+     (setq flycheck-checker 'ruby-rubocop)))
+(custom-set-variables
+ '(ruby-insert-encoding-magic-comment nil))
 
 
-;;;; Projectile Settings
-(require 'projectile)
-(projectile-mode +1)
-
-
-;;;; Git Gutter Settings
+;; git-gutter Settings
 (require 'git-gutter)
 (global-git-gutter-mode)
 
 
-;;;; Mode List
+;; Mode List
 (require 'slim-mode)
 (add-to-list 'auto-mode-alist '("\\.slim\\'" . slim-mode))
 
@@ -105,8 +103,20 @@
 (add-to-list 'auto-mode-alist '("\\.html?\\'" . web-mode))
 (add-to-list 'auto-mode-alist '("\\.[tj]sx?\\'" . web-mode))
 
+(require 'markdown-preview-mode)
+(add-to-list 'auto-mode-alist '("\\.md\\'" . markdown-preview-mode))
 
-;;;; Web Mode Settings
+
+;; web-mode Settings
 (setq web-mode-markup-indent-offset 2)
 (setq web-mode-css-indent-offset 2)
 (setq web-mode-code-indent-offset 2)
+
+
+;; TypeScript Lint Settings
+(add-hook 'web-mode-hook
+          (lambda ()
+            (when (string-equal "tsx" (file-name-extension buffer-file-name))
+              (tide-setup))))
+
+(flycheck-add-mode 'typescript-tslint 'web-mode)
