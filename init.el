@@ -6,7 +6,7 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
-   '(julia-repl julia-mode json-mode multiple-cursors string-inflection markdown-mode open-junk-file tide git-gutter-fringe rubocop eglot terraform-mode find-file-in-project flycheck counsel yaml-mode slim-mode magit web-mode)))
+   '(sqlformat julia-repl julia-mode json-mode multiple-cursors string-inflection markdown-mode open-junk-file tide git-gutter-fringe rubocop eglot terraform-mode find-file-in-project flycheck counsel yaml-mode slim-mode magit web-mode)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -28,6 +28,11 @@
   (unless (package-installed-p package)
     (package-install package)))
 
+(defun copy2clipboard ()
+  "Copy to clipboard."
+  (interactive)
+  (when (region-active-p)
+    (shell-command-on-region (region-beginning) (region-end) "pbcopy" nil nil)))
 
 ;; Global Settings
 (electric-pair-mode t)
@@ -43,6 +48,7 @@
 (define-key global-map (kbd "C-r") 'swiper-isearch-backward)
 (define-key global-map (kbd "C-c g") 'counsel-git-grep)
 (define-key global-map (kbd "C-c f") 'counsel-git)
+(define-key global-map (kbd "C-c c") 'copy2clipboard)
 
 
 ;; ivy Settings
@@ -83,7 +89,6 @@
   '(lambda ()
      (setq flycheck-checker 'ruby-rubocop)))
 (setq-default ruby-insert-encoding-magic-comment nil)
-
 
 
 ;; git-gutter Settings
