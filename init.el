@@ -47,7 +47,11 @@
 (global-display-line-numbers-mode)
 (setq-default indent-tabs-mode nil)
 (set-language-environment "UTF-8")
-
+(add-hook 'before-save-hook 'delete-trailing-whitespace)
+(global-whitespace-mode 1)
+(setq make-backup-files nil)
+(setq auto-save-default nil)
+(setq create-lockfiles nil)
 
 ;; Global Key Binds
 (define-key global-map (kbd "C-h" ) 'delete-backward-char)
@@ -57,6 +61,22 @@
 (define-key global-map (kbd "C-c g") 'counsel-git-grep)
 (define-key global-map (kbd "C-c f") 'counsel-git)
 (define-key global-map (kbd "C-c c") 'copy2clipboard)
+
+;; whitespace Settings
+(setq-default whitespace-style '(face
+                                 tabs
+                                 ;;spaces
+                                 trailing
+                                 ;;lines
+                                 space-before-tab
+                                 ;;newline
+                                 indentation
+                                 empty
+                                 space-after-tab
+                                 ;;space-mark
+                                 tab-mark
+                                 ;;newline-mark
+                                 ))
 
 
 ;; ivy Settings
