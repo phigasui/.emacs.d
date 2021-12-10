@@ -161,6 +161,10 @@
 (setq js-indent-level 2)
 
 
+;; [s]css-mode Settings
+(setq-default css-indent-offset 2)
+
+
 ;; julia-mode Settings
 (require 'julia-mode)
 (require 'julia-repl)
