@@ -37,6 +37,11 @@
   (when (region-active-p)
     (shell-command-on-region (region-beginning) (region-end) "pbcopy" nil nil)))
 
+(defun sort-js-import-lines (beg end)
+  "Sort import lines from BEG to END."
+  (interactive (list (region-beginning) (region-end)))
+  (sort-regexp-fields nil "^import.+$" "from.+" beg end))
+
 ;; Global Settings
 (electric-pair-mode t)
 (global-display-line-numbers-mode)
