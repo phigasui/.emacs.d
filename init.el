@@ -6,7 +6,10 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
-   '(sqlformat julia-repl julia-mode json-mode multiple-cursors string-inflection markdown-mode open-junk-file tide git-gutter-fringe rubocop eglot terraform-mode find-file-in-project flycheck counsel yaml-mode slim-mode magit web-mode)))
+   '(package-utils rspec-mode adoc-mode csv-mode sqlformat julia-repl julia-mode json-mode multiple-cursors string-inflection markdown-mode open-junk-file tide git-gutter-fringe rubocop eglot terraform-mode find-file-in-project flycheck counsel yaml-mode slim-mode magit web-mode))
+ '(rspec-spec-command "bin/redeem exec spring rspec")
+ '(rspec-use-bundler-when-possible nil)
+ '(rspec-use-spring-when-possible nil))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -34,12 +37,21 @@
   (when (region-active-p)
     (shell-command-on-region (region-beginning) (region-end) "pbcopy" nil nil)))
 
+(defun sort-js-import-lines (beg end)
+  "Sort import lines from BEG to END."
+  (interactive (list (region-beginning) (region-end)))
+  (sort-regexp-fields nil "^import.+$" "from.+" beg end))
+
 ;; Global Settings
 (electric-pair-mode t)
 (global-display-line-numbers-mode)
 (setq-default indent-tabs-mode nil)
 (set-language-environment "UTF-8")
-
+(add-hook 'before-save-hook 'delete-trailing-whitespace)
+(global-whitespace-mode 1)
+(setq make-backup-files nil)
+(setq auto-save-default nil)
+(setq create-lockfiles nil)
 
 ;; Global Key Binds
 (define-key global-map (kbd "C-h" ) 'delete-backward-char)
@@ -49,6 +61,22 @@
 (define-key global-map (kbd "C-c g") 'counsel-git-grep)
 (define-key global-map (kbd "C-c f") 'counsel-git)
 (define-key global-map (kbd "C-c c") 'copy2clipboard)
+
+;; whitespace Settings
+(setq-default whitespace-style '(face
+                                 tabs
+                                 ;;spaces
+                                 trailing
+                                 ;;lines
+                                 space-before-tab
+                                 ;;newline
+                                 indentation
+                                 empty
+                                 space-after-tab
+                                 ;;space-mark
+                                 tab-mark
+                                 ;;newline-mark
+                                 ))
 
 
 ;; ivy Settings
@@ -131,6 +159,10 @@
 (add-to-list 'auto-mode-alist '("\\.json\\'" . json-mode))
 (setq json-reformat:indent-width 2)
 (setq js-indent-level 2)
+
+
+;; [s]css-mode Settings
+(setq-default css-indent-offset 2)
 
 
 ;; julia-mode Settings
