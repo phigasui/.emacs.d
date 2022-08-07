@@ -153,6 +153,11 @@
             (when (string-equal "tsx" (file-name-extension buffer-file-name))
               (tide-setup))))
 
+(add-hook 'web-mode-hook
+          (lambda ()
+            (when (string-equal "vue" (file-name-extension buffer-file-name))
+              (tide-setup))))
+
 (flycheck-add-mode 'typescript-tslint 'web-mode)
 
 ;; json-mode Settings
