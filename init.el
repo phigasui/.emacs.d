@@ -6,7 +6,7 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
-   '(package-utils rspec-mode adoc-mode csv-mode sqlformat julia-repl julia-mode json-mode multiple-cursors string-inflection markdown-mode open-junk-file tide git-gutter-fringe rubocop eglot terraform-mode find-file-in-project flycheck counsel yaml-mode slim-mode magit web-mode))
+   '(ddskk package-utils rspec-mode adoc-mode csv-mode sqlformat julia-repl julia-mode json-mode multiple-cursors string-inflection markdown-mode open-junk-file tide git-gutter-fringe rubocop eglot terraform-mode find-file-in-project flycheck counsel yaml-mode slim-mode magit web-mode))
  '(rspec-spec-command "docker compose run --rm rails bundle exec rspec")
  '(rspec-use-bundler-when-possible nil)
  '(rspec-use-spring-when-possible nil))
@@ -52,6 +52,7 @@
 (setq make-backup-files nil)
 (setq auto-save-default nil)
 (setq create-lockfiles nil)
+(setq default-input-method "japanese-skk")
 
 ;; Global Key Binds
 (define-key global-map (kbd "C-h" ) 'delete-backward-char)
