@@ -52,7 +52,6 @@
 (setq make-backup-files nil)
 (setq auto-save-default nil)
 (setq create-lockfiles nil)
-(setq default-input-method "japanese-skk")
 
 ;; Global Key Binds
 (define-key global-map (kbd "C-h" ) 'delete-backward-char)
@@ -62,6 +61,13 @@
 (define-key global-map (kbd "C-c g") 'counsel-git-grep)
 (define-key global-map (kbd "C-c f") 'counsel-git)
 (define-key global-map (kbd "C-c c") 'copy2clipboard)
+
+;; skk Settings
+(setq default-input-method "japanese-skk")
+(setq-default skk-server-host "localhost")
+(setq-default skk-server-portnum 1178)
+(setq-default skk-jisyo-code 'utf-8)
+(setq-default skk-egg-like-newline t)
 
 ;; whitespace Settings
 (setq-default whitespace-style '(face
