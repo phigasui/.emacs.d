@@ -6,7 +6,7 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
-   '(ddskk package-utils rspec-mode adoc-mode csv-mode sqlformat julia-repl julia-mode json-mode multiple-cursors string-inflection markdown-mode open-junk-file tide git-gutter-fringe rubocop eglot terraform-mode find-file-in-project flycheck counsel yaml-mode slim-mode magit web-mode))
+   '(forge ddskk package-utils rspec-mode adoc-mode csv-mode sqlformat julia-repl julia-mode json-mode multiple-cursors string-inflection markdown-mode open-junk-file tide git-gutter-fringe rubocop eglot terraform-mode find-file-in-project flycheck counsel yaml-mode slim-mode magit web-mode))
  '(rspec-spec-command "docker compose run --rm rails bundle exec rspec")
  '(rspec-use-bundler-when-possible nil)
  '(rspec-use-spring-when-possible nil))
@@ -68,6 +68,12 @@
 (setq-default skk-server-portnum 1178)
 (setq-default skk-jisyo-code 'utf-8)
 (setq-default skk-egg-like-newline t)
+
+;; Git Settings
+(require 'magit-mode)
+(with-eval-after-load 'magit
+  (require 'forge))
+(define-key magit-mode-map (kbd "C-c C-w") 'forge-browse-dwim)
 
 ;; whitespace Settings
 (setq-default whitespace-style '(face
