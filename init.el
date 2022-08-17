@@ -127,7 +127,7 @@
 (require 'rubocop)
 (add-hook 'ruby-mode-hook 'rubocop-mode)
 (add-hook 'ruby-mode-hook
-  '(lambda ()
+  (lambda ()
      (setq flycheck-checker 'ruby-rubocop)))
 (setq-default ruby-insert-encoding-magic-comment nil)
 
@@ -175,7 +175,7 @@
 ;; json-mode Settings
 (require 'json-mode)
 (add-to-list 'auto-mode-alist '("\\.json\\'" . json-mode))
-(setq json-reformat:indent-width 2)
+(setq-default json-reformat:indent-width 2)
 (setq js-indent-level 2)
 
 
