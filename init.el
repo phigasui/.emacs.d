@@ -6,7 +6,7 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
-   '(forge ddskk package-utils rspec-mode adoc-mode csv-mode sqlformat julia-repl julia-mode json-mode multiple-cursors string-inflection markdown-mode open-junk-file tide git-gutter-fringe rubocop eglot terraform-mode find-file-in-project flycheck counsel yaml-mode slim-mode magit web-mode))
+   '(highlight-indent-guides forge ddskk package-utils rspec-mode adoc-mode csv-mode sqlformat julia-repl julia-mode json-mode multiple-cursors string-inflection markdown-mode open-junk-file tide git-gutter-fringe rubocop eglot terraform-mode find-file-in-project flycheck counsel yaml-mode slim-mode magit web-mode)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -39,16 +39,21 @@
   (interactive (list (region-beginning) (region-end)))
   (sort-regexp-fields nil "^import.+$" "from.+" beg end))
 
+;; Theme
+(load-theme 'whiteboard t)
+
 ;; Global Settings
 (electric-pair-mode t)
 (global-display-line-numbers-mode)
 (setq-default indent-tabs-mode nil)
 (set-language-environment "UTF-8")
 (add-hook 'before-save-hook 'delete-trailing-whitespace)
-(global-whitespace-mode 1)
 (setq make-backup-files nil)
 (setq auto-save-default nil)
 (setq create-lockfiles nil)
+
+(add-hook 'prog-mode-hook 'highlight-indent-guides-mode)
+(add-hook 'prog-mode-hook 'global-whitespace-mode)
 
 ;; Global Key Binds
 (define-key global-map (kbd "C-h" ) 'delete-backward-char)
@@ -71,6 +76,8 @@
 (with-eval-after-load 'magit
   (require 'forge))
 (define-key magit-mode-map (kbd "C-c C-w") 'forge-browse-dwim)
+(setq-default magit-diff-refine-hunk-all t)
+
 
 ;; whitespace Settings
 (setq-default whitespace-style '(face
