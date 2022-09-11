@@ -28,6 +28,7 @@
   (unless (package-installed-p package)
     (package-install package)))
 
+;; Functions
 (defun copy2clipboard ()
   "Copy to clipboard."
   (interactive)
@@ -38,6 +39,11 @@
   "Sort import lines from BEG to END."
   (interactive (list (region-beginning) (region-end)))
   (sort-regexp-fields nil "^import.+$" "from.+" beg end))
+
+(defun counter-other-window ()
+  "Focus other window conterly."
+  (interactive)
+  (other-window -1))
 
 ;; Theme
 (load-theme 'whiteboard t)
@@ -63,6 +69,7 @@
 (define-key global-map (kbd "C-c g") 'counsel-git-grep)
 (define-key global-map (kbd "C-c f") 'counsel-git)
 (define-key global-map (kbd "C-c c") 'copy2clipboard)
+(define-key global-map (kbd "C-x O") 'counter-other-window)
 
 ;; skk Settings
 (setq default-input-method "japanese-skk")
