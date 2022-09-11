@@ -6,10 +6,7 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
-   '(forge ddskk package-utils rspec-mode adoc-mode csv-mode sqlformat julia-repl julia-mode json-mode multiple-cursors string-inflection markdown-mode open-junk-file tide git-gutter-fringe rubocop eglot terraform-mode find-file-in-project flycheck counsel yaml-mode slim-mode magit web-mode))
- '(rspec-spec-command "docker compose run --rm rails bundle exec rspec")
- '(rspec-use-bundler-when-possible nil)
- '(rspec-use-spring-when-possible nil))
+   '(highlight-indent-guides forge ddskk package-utils rspec-mode adoc-mode csv-mode sqlformat julia-repl julia-mode json-mode multiple-cursors string-inflection markdown-mode open-junk-file tide git-gutter-fringe rubocop eglot terraform-mode find-file-in-project flycheck counsel yaml-mode slim-mode magit web-mode)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -31,6 +28,7 @@
   (unless (package-installed-p package)
     (package-install package)))
 
+;; Functions
 (defun copy2clipboard ()
   "Copy to clipboard."
   (interactive)
@@ -42,16 +40,26 @@
   (interactive (list (region-beginning) (region-end)))
   (sort-regexp-fields nil "^import.+$" "from.+" beg end))
 
+(defun counter-other-window ()
+  "Focus other window conterly."
+  (interactive)
+  (other-window -1))
+
+;; Theme
+(load-theme 'whiteboard t)
+
 ;; Global Settings
 (electric-pair-mode t)
 (global-display-line-numbers-mode)
 (setq-default indent-tabs-mode nil)
 (set-language-environment "UTF-8")
 (add-hook 'before-save-hook 'delete-trailing-whitespace)
-(global-whitespace-mode 1)
 (setq make-backup-files nil)
 (setq auto-save-default nil)
 (setq create-lockfiles nil)
+
+(add-hook 'prog-mode-hook 'highlight-indent-guides-mode)
+(add-hook 'prog-mode-hook 'global-whitespace-mode)
 
 ;; Global Key Binds
 (define-key global-map (kbd "C-h" ) 'delete-backward-char)
@@ -61,6 +69,7 @@
 (define-key global-map (kbd "C-c g") 'counsel-git-grep)
 (define-key global-map (kbd "C-c f") 'counsel-git)
 (define-key global-map (kbd "C-c c") 'copy2clipboard)
+(define-key global-map (kbd "C-x O") 'counter-other-window)
 
 ;; skk Settings
 (setq default-input-method "japanese-skk")
@@ -74,6 +83,8 @@
 (with-eval-after-load 'magit
   (require 'forge))
 (define-key magit-mode-map (kbd "C-c C-w") 'forge-browse-dwim)
+(setq-default magit-diff-refine-hunk-all t)
+
 
 ;; whitespace Settings
 (setq-default whitespace-style '(face
@@ -127,10 +138,14 @@
 (require 'rubocop)
 (add-hook 'ruby-mode-hook 'rubocop-mode)
 (add-hook 'ruby-mode-hook
-  '(lambda ()
+  (lambda ()
      (setq flycheck-checker 'ruby-rubocop)))
 (setq-default ruby-insert-encoding-magic-comment nil)
 
+;; Rspec Settings
+(setq-default rspec-use-docker-when-possible 1)
+(setq-default rspec-docker-cwd "./")
+(setq-default rspec-docker-container "rails")
 
 ;; git-gutter Settings
 (require 'git-gutter)
@@ -175,7 +190,7 @@
 ;; json-mode Settings
 (require 'json-mode)
 (add-to-list 'auto-mode-alist '("\\.json\\'" . json-mode))
-(setq json-reformat:indent-width 2)
+(setq-default json-reformat:indent-width 2)
 (setq js-indent-level 2)
 
 
