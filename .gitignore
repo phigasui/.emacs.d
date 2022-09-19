@@ -56,3 +56,6 @@ recentf
 url/
 
 forge-database.sqlite
+
+# packages
+/straight/
