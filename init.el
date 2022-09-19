@@ -27,6 +27,9 @@
       (eval-print-last-sexp)))
   (load bootstrap-file nil 'nomessage))
 
+(straight-use-package
+ '(prisma-mode :type git :host github :repo "pimeys/emacs-prisma-mode"))
+
 ;; Package Managements
 (require 'package)
 (setq package-archives
