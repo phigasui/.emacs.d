@@ -143,9 +143,9 @@
 (setq-default ruby-insert-encoding-magic-comment nil)
 
 ;; Rspec Settings
-(setq-default rspec-use-docker-when-possible 1)
-(setq-default rspec-docker-cwd "./")
-(setq-default rspec-docker-container "rails")
+(setq-default rspec-spec-command "bin/docker/rspec")
+(setq-default rspec-use-bundler-when-possible nil)
+(setq-default rspec-use-relative-path t)
 
 ;; git-gutter Settings
 (require 'git-gutter)
