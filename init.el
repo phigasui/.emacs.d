@@ -70,6 +70,7 @@
 (define-key global-map (kbd "C-c f") 'counsel-git)
 (define-key global-map (kbd "C-c c") 'copy2clipboard)
 (define-key global-map (kbd "C-x O") 'counter-other-window)
+(define-key global-map (kbd "C-c RET") 'find-file-at-point)
 
 ;; skk Settings
 (setq default-input-method "japanese-skk")
