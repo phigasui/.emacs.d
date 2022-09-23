@@ -3,6 +3,7 @@
 
 (setq mc/cmds-to-run-for-all
       '(
+        counsel-git
         indent-for-tab-command
         ))
 
