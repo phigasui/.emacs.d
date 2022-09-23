@@ -6,7 +6,7 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
-   '(highlight-indent-guides forge ddskk package-utils rspec-mode adoc-mode csv-mode sqlformat julia-repl julia-mode json-mode multiple-cursors string-inflection markdown-mode open-junk-file tide git-gutter-fringe rubocop eglot terraform-mode find-file-in-project flycheck counsel yaml-mode slim-mode magit web-mode)))
+   '(jest highlight-indent-guides forge ddskk package-utils rspec-mode adoc-mode csv-mode sqlformat julia-repl julia-mode json-mode multiple-cursors string-inflection markdown-mode open-junk-file tide git-gutter-fringe rubocop eglot terraform-mode find-file-in-project flycheck counsel yaml-mode slim-mode magit web-mode)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -85,6 +85,7 @@
 (define-key global-map (kbd "C-c f") 'counsel-git)
 (define-key global-map (kbd "C-c c") 'copy2clipboard)
 (define-key global-map (kbd "C-x O") 'counter-other-window)
+(define-key global-map (kbd "C-c RET") 'find-file-at-point)
 
 ;; skk Settings
 (setq default-input-method "japanese-skk")
@@ -158,9 +159,9 @@
 (setq-default ruby-insert-encoding-magic-comment nil)
 
 ;; Rspec Settings
-(setq-default rspec-use-docker-when-possible 1)
-(setq-default rspec-docker-cwd "./")
-(setq-default rspec-docker-container "rails")
+(setq-default rspec-spec-command "bin/docker/rspec")
+(setq-default rspec-use-bundler-when-possible nil)
+(setq-default rspec-use-relative-path t)
 
 ;; git-gutter Settings
 (require 'git-gutter)
