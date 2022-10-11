@@ -75,6 +75,7 @@
 
 (add-hook 'prog-mode-hook 'highlight-indent-guides-mode)
 (add-hook 'prog-mode-hook 'global-whitespace-mode)
+(add-hook 'find-file-hook (lambda () (skk-latin-mode 1)))
 
 ;; Global Key Binds
 (define-key global-map (kbd "C-h" ) 'delete-backward-char)
@@ -94,6 +95,22 @@
 (setq skk-server-portnum 1178)
 (setq skk-jisyo-code 'utf-8)
 (setq skk-egg-like-newline t)
+(setq skk-show-annotation t)
+(setq skk-delete-implies-kakutei nil)
+(setq skk-annotation-delay 0)
+(setq skk-show-tooltip t)
+
+(setq skk-rom-kana-rule-list
+      (append '(("c" nil skk-abbrev-mode)
+                )
+              skk-rom-kana-rule-list))
+(defconst overriding-skk-rom-kana-base-rule-list
+  (seq-filter (lambda (x) (cond ((stringp (car x)) (not (string= (substring (car x) 0 1) "c"))))) skk-rom-kana-base-rule-list)
+              )
+
+(setq skk-rule-tree
+      (skk-compile-rule-list
+       overriding-skk-rom-kana-base-rule-list skk-rom-kana-rule-list))
 
 ;; Git Settings
 (require 'magit-mode)
