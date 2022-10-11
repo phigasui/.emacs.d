@@ -88,18 +88,20 @@
 (define-key global-map (kbd "C-c RET") 'find-file-at-point)
 
 ;; skk Settings
+(require 'skk)
 (setq default-input-method "japanese-skk")
-(setq-default skk-server-host "localhost")
-(setq-default skk-server-portnum 1178)
-(setq-default skk-jisyo-code 'utf-8)
-(setq-default skk-egg-like-newline t)
+(setq skk-server-host "localhost")
+(setq skk-server-portnum 1178)
+(setq skk-jisyo-code 'utf-8)
+(setq skk-egg-like-newline t)
 
 ;; Git Settings
 (require 'magit-mode)
 (with-eval-after-load 'magit
   (require 'forge))
 (define-key magit-mode-map (kbd "C-c C-w") 'forge-browse-dwim)
-(setq-default magit-diff-refine-hunk-all t)
+(require 'magit-diff)
+(setq magit-diff-refine-hunk t)
 
 (setq magit-display-buffer-function
       (lambda (buffer)
@@ -107,26 +109,28 @@
 
 
 ;; whitespace Settings
-(setq-default whitespace-style '(face
-                                 tabs
-                                 ;;spaces
-                                 trailing
-                                 ;;lines
-                                 space-before-tab
-                                 ;;newline
-                                 indentation
-                                 empty
-                                 space-after-tab
-                                 ;;space-mark
-                                 tab-mark
-                                 ;;newline-mark
-                                 ))
+(require 'whitespace)
+(setq whitespace-style '(face
+                         tabs
+                         ;;spaces
+                         trailing
+                         ;;lines
+                         space-before-tab
+                         ;;newline
+                         indentation
+                         empty
+                         space-after-tab
+                         ;;space-mark
+                         tab-mark
+                         ;;newline-mark
+                         ))
 
 
 ;; ivy Settings
+(require 'ivy)
 (ivy-mode 1)
-(setq-default ivy-use-virtual-buffers t)
-(setq-default ivy-count-format "(%d/%d) ")
+(setq ivy-use-virtual-buffers t)
+(setq ivy-count-format "(%d/%d) ")
 
 
 ;; company Settings
@@ -155,17 +159,19 @@
 
 
 ;; Ruby Settings
+(require 'ruby-mode)
 (require 'rubocop)
 (add-hook 'ruby-mode-hook 'rubocop-mode)
 (add-hook 'ruby-mode-hook
           (lambda ()
             (setq flycheck-checker 'ruby-rubocop)))
-(setq-default ruby-insert-encoding-magic-comment nil)
+(setq ruby-insert-encoding-magic-comment nil)
 
 ;; Rspec Settings
-(setq-default rspec-spec-command "bin/docker/rspec")
-(setq-default rspec-use-bundler-when-possible nil)
-(setq-default rspec-use-relative-path t)
+(require 'rspec-mode)
+(setq rspec-spec-command "bin/docker/rspec")
+(setq rspec-use-bundler-when-possible nil)
+(setq rspec-use-relative-path t)
 
 ;; git-gutter Settings
 (require 'git-gutter)
@@ -205,12 +211,13 @@
 ;; json-mode Settings
 (require 'json-mode)
 (add-to-list 'auto-mode-alist '("\\.json\\'" . json-mode))
-(setq-default json-reformat:indent-width 2)
+(setq json-reformat:indent-width 2)
 (setq js-indent-level 2)
 
 
 ;; [s]css-mode Settings
-(setq-default css-indent-offset 2)
+(require 'css-mode)
+(setq css-indent-offset 2)
 
 
 ;; julia-mode Settings
