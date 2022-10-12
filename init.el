@@ -101,6 +101,10 @@
 (define-key magit-mode-map (kbd "C-c C-w") 'forge-browse-dwim)
 (setq-default magit-diff-refine-hunk-all t)
 
+(setq magit-display-buffer-function
+      (lambda (buffer)
+        (display-buffer buffer '(display-buffer-same-window))))
+
 
 ;; whitespace Settings
 (setq-default whitespace-style '(face
