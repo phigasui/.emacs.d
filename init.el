@@ -158,8 +158,8 @@
 (require 'rubocop)
 (add-hook 'ruby-mode-hook 'rubocop-mode)
 (add-hook 'ruby-mode-hook
-  (lambda ()
-     (setq flycheck-checker 'ruby-rubocop)))
+          (lambda ()
+            (setq flycheck-checker 'ruby-rubocop)))
 (setq-default ruby-insert-encoding-magic-comment nil)
 
 ;; Rspec Settings
@@ -170,11 +170,6 @@
 ;; git-gutter Settings
 (require 'git-gutter)
 (global-git-gutter-mode)
-
-
-;; Mode List
-(require 'slim-mode)
-(add-to-list 'auto-mode-alist '("\\.slim\\'" . slim-mode))
 
 (require 'yaml-mode)
 (add-to-list 'auto-mode-alist '("\\.ya?ml\\'" . yaml-mode))
