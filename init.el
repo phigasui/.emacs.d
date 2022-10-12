@@ -101,6 +101,10 @@
 (define-key magit-mode-map (kbd "C-c C-w") 'forge-browse-dwim)
 (setq-default magit-diff-refine-hunk-all t)
 
+(setq magit-display-buffer-function
+      (lambda (buffer)
+        (display-buffer buffer '(display-buffer-same-window))))
+
 
 ;; whitespace Settings
 (setq-default whitespace-style '(face
@@ -154,8 +158,8 @@
 (require 'rubocop)
 (add-hook 'ruby-mode-hook 'rubocop-mode)
 (add-hook 'ruby-mode-hook
-  (lambda ()
-     (setq flycheck-checker 'ruby-rubocop)))
+          (lambda ()
+            (setq flycheck-checker 'ruby-rubocop)))
 (setq-default ruby-insert-encoding-magic-comment nil)
 
 ;; Rspec Settings
@@ -166,11 +170,6 @@
 ;; git-gutter Settings
 (require 'git-gutter)
 (global-git-gutter-mode)
-
-
-;; Mode List
-(require 'slim-mode)
-(add-to-list 'auto-mode-alist '("\\.slim\\'" . slim-mode))
 
 (require 'yaml-mode)
 (add-to-list 'auto-mode-alist '("\\.ya?ml\\'" . yaml-mode))
