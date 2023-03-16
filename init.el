@@ -30,6 +30,9 @@
 (straight-use-package
  '(prisma-mode :type git :host github :repo "pimeys/emacs-prisma-mode"))
 
+(straight-use-package
+ '(copilot :type git :host github :repo "zerolfx/copilot.el" :files ("dist" "*.el")))
+
 ;; Package Managements
 (require 'package)
 (setq package-archives
@@ -64,6 +67,7 @@
 (load-theme 'whiteboard t)
 
 ;; Global Settings
+(require 'dired)
 (electric-pair-mode t)
 (global-display-line-numbers-mode)
 (setq-default indent-tabs-mode nil)
@@ -72,6 +76,7 @@
 (setq make-backup-files nil)
 (setq auto-save-default nil)
 (setq create-lockfiles nil)
+(setq dired-dwim-target t)
 
 (add-hook 'prog-mode-hook 'highlight-indent-guides-mode)
 (add-hook 'prog-mode-hook 'global-whitespace-mode)
@@ -124,6 +129,19 @@
       (lambda (buffer)
         (display-buffer buffer '(display-buffer-same-window))))
 
+
+;; GitHub Copilot Settings
+(require 'copilot)
+(add-hook 'prog-mode-hook 'copilot-mode)
+
+(with-eval-after-load 'company
+  ;; disable inline previews
+  (delq 'company-preview-if-just-one-frontend company-frontends))
+
+(define-key copilot-completion-map (kbd "C-p") 'copilot-previous-completion)
+(define-key copilot-completion-map (kbd "C-n") 'copilot-next-completion)
+(define-key copilot-completion-map (kbd "<tab>") 'copilot-accept-completion)
+(define-key copilot-completion-map (kbd "TAB") 'copilot-accept-completion)
 
 ;; whitespace Settings
 (require 'whitespace)
@@ -216,6 +234,11 @@
 (add-hook 'web-mode-hook
           (lambda ()
             (when (string-equal "tsx" (file-name-extension buffer-file-name))
+              (tide-setup))))
+
+(add-hook 'web-mode-hook
+          (lambda ()
+            (when (string-equal "ts" (file-name-extension buffer-file-name))
               (tide-setup))))
 
 (add-hook 'web-mode-hook
