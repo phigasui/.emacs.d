@@ -64,6 +64,7 @@
 (load-theme 'whiteboard t)
 
 ;; Global Settings
+(require 'dired)
 (electric-pair-mode t)
 (global-display-line-numbers-mode)
 (setq-default indent-tabs-mode nil)
@@ -72,6 +73,7 @@
 (setq make-backup-files nil)
 (setq auto-save-default nil)
 (setq create-lockfiles nil)
+(setq dired-dwim-target t)
 
 (add-hook 'prog-mode-hook 'highlight-indent-guides-mode)
 (add-hook 'prog-mode-hook 'global-whitespace-mode)
