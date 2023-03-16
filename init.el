@@ -222,6 +222,11 @@
 
 (add-hook 'web-mode-hook
           (lambda ()
+            (when (string-equal "ts" (file-name-extension buffer-file-name))
+              (tide-setup))))
+
+(add-hook 'web-mode-hook
+          (lambda ()
             (when (string-equal "vue" (file-name-extension buffer-file-name))
               (tide-setup))))
 
