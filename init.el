@@ -200,6 +200,7 @@
 (add-hook 'ruby-mode-hook
           (lambda ()
             (setq flycheck-checker 'ruby-rubocop)))
+(add-hook 'after-init-hook 'inf-ruby-switch-setup)
 (setq ruby-insert-encoding-magic-comment nil)
 
 ;; Rspec Settings
