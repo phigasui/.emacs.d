@@ -202,6 +202,9 @@
             (setq flycheck-checker 'ruby-rubocop)))
 (setq ruby-insert-encoding-magic-comment nil)
 
+(add-to-list 'eglot-server-programs
+             '(ruby-mode . ("ruby-lsp")))
+
 ;; Rspec Settings
 (require 'rspec-mode)
 (setq rspec-spec-command "bin/docker/rspec")
