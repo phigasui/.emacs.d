@@ -1,19 +1,11 @@
+;;; init.el --- Personal Emacs configuration -*- lexical-binding: t; -*-
+;;; Commentary: Emacs 29+ configuration
 
 ;;; Code:
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(package-selected-packages
-   '(jest highlight-indent-guides forge ddskk package-utils rspec-mode adoc-mode csv-mode sqlformat julia-repl julia-mode json-mode multiple-cursors string-inflection markdown-mode open-junk-file tide git-gutter-fringe rubocop eglot find-file-in-project flycheck counsel yaml-mode magit web-mode)))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- )
 
+;; ============================================================
+;; straight.el bootstrap (copilot と prisma-mode のみ)
+;; ============================================================
 (defvar bootstrap-version)
 (let ((bootstrap-file
        (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
@@ -28,247 +20,431 @@
   (load bootstrap-file nil 'nomessage))
 
 (straight-use-package
- '(prisma-mode :type git :host github :repo "pimeys/emacs-prisma-mode"))
+ '(copilot :type git :host github :repo "copilot-emacs/copilot.el"
+           :files ("dist" "*.el")))
 
 (straight-use-package
- '(copilot :type git :host github :repo "zerolfx/copilot.el" :files ("dist" "*.el")))
+ '(claude-code-ide :type git :host github :repo "manzaltu/claude-code-ide.el"))
 
-;; Package Managements
+;; ============================================================
+;; package.el
+;; ============================================================
 (require 'package)
 (setq package-archives
-      '(("melpa" . "https://melpa.org/packages/")
-        ("org" . "https://orgmode.org/elpa/")
-        ("gnu" . "https://elpa.gnu.org/packages/")))
+      '(("melpa"  . "https://melpa.org/packages/")
+        ("gnu"    . "https://elpa.gnu.org/packages/")
+        ("nongnu" . "https://elpa.nongnu.org/nongnu/")))
 (package-initialize)
-(package-refresh-contents)
 
-(dolist (package package-selected-packages)
-  (unless (package-installed-p package)
-    (package-install package)))
+;; 毎起動のネットワーク通信を避ける（パッケージが未インストールの時のみ取得）
+(unless package-archive-contents
+  (package-refresh-contents))
 
-;; Functions
+;; ============================================================
+;; use-package (Emacs 29 組み込み)
+;; ============================================================
+(require 'use-package)
+(setq use-package-always-ensure t)
+
+;; ============================================================
+;; custom.el に Custom の書き込みを分離
+;; ============================================================
+(setq custom-file (expand-file-name "custom.el" user-emacs-directory))
+(when (file-exists-p custom-file)
+  (load custom-file 'noerror 'nomessage))
+
+;; ============================================================
+;; グローバル基本設定
+;; ============================================================
+(set-language-environment "UTF-8")
+(setq-default indent-tabs-mode nil)
+(setq make-backup-files nil)
+(setq auto-save-default nil)
+(setq create-lockfiles nil)
+(electric-pair-mode t)
+(global-display-line-numbers-mode t)
+(add-hook 'before-save-hook #'delete-trailing-whitespace)
+
+(use-package dired
+  :ensure nil
+  :custom (dired-dwim-target t))
+
+;; ============================================================
+;; UI / テーマ
+;; ============================================================
+(use-package nerd-icons
+  :ensure t)
+;; 初回のみ: M-x nerd-icons-install-fonts
+
+(use-package doom-themes
+  :ensure t
+  :config
+  (setq doom-themes-enable-bold t
+        doom-themes-enable-italic t)
+  (load-theme 'doom-one-light t)
+  (doom-themes-visual-bell-config))
+
+(use-package doom-modeline
+  :ensure t
+  :hook (after-init . doom-modeline-mode)
+  :custom
+  (doom-modeline-height 25)
+  (doom-modeline-icon t)
+  (doom-modeline-major-mode-icon t))
+
+;; ============================================================
+;; ミニバッファ補完スタック (vertico + orderless + marginalia + consult + embark)
+;; ============================================================
+(use-package vertico
+  :ensure t
+  :init
+  (vertico-mode)
+  :custom
+  (vertico-cycle t))
+
+(use-package orderless
+  :ensure t
+  :custom
+  (completion-styles '(orderless basic))
+  (completion-category-overrides
+   '((file (styles basic partial-completion)))))
+
+(use-package marginalia
+  :ensure t
+  :init
+  (marginalia-mode))
+
+(use-package savehist
+  :ensure nil
+  :init
+  (savehist-mode))
+
+(use-package consult
+  :ensure t
+  :bind
+  (("C-s"   . consult-line)
+   ("C-r"   . consult-line)
+   ("C-c g" . consult-ripgrep)
+   ("C-c f" . project-find-file)
+   ("C-c b" . consult-buffer)
+   ("C-c r" . consult-recent-file))
+  )
+
+(use-package embark
+  :ensure t
+  :bind
+  (("C-." . embark-act)
+   ("C-;" . embark-dwim)))
+
+(use-package embark-consult
+  :ensure t
+  :hook
+  (embark-collect-mode . consult-preview-at-point-mode))
+
+;; ============================================================
+;; バッファ内補完 (corfu + cape)
+;; ============================================================
+(use-package corfu
+  :ensure t
+  :custom
+  (corfu-auto t)
+  (corfu-auto-delay 0)
+  (corfu-auto-prefix 1)
+  (corfu-cycle t)
+  (corfu-quit-at-boundary nil)
+  (corfu-separator ?\s)
+  :bind
+  (:map corfu-map
+   ("C-n" . corfu-next)
+   ("C-p" . corfu-previous))
+  :init
+  (global-corfu-mode))
+
+(use-package nerd-icons-corfu
+  :ensure t
+  :after corfu
+  :config
+  (add-to-list 'corfu-margin-formatters #'nerd-icons-corfu-formatter))
+
+(use-package cape
+  :ensure t
+  :init
+  (add-to-list 'completion-at-point-functions #'cape-dabbrev)
+  (add-to-list 'completion-at-point-functions #'cape-file)
+  (add-to-list 'completion-at-point-functions #'cape-keyword))
+
+;; ============================================================
+;; ユーザー関数
+;; ============================================================
 (defun copy2clipboard ()
-  "Copy to clipboard."
+  "Copy region to macOS clipboard."
   (interactive)
   (when (region-active-p)
     (shell-command-on-region (region-beginning) (region-end) "pbcopy" nil nil)))
 
 (defun sort-js-import-lines (beg end)
-  "Sort import lines from BEG to END."
+  "Sort JS import lines from BEG to END."
   (interactive (list (region-beginning) (region-end)))
   (sort-regexp-fields nil "^import.+$" "from.+" beg end))
 
 (defun counter-other-window ()
-  "Focus other window conterly."
+  "Move focus to the previous window."
   (interactive)
   (other-window -1))
 
-;; Theme
-(load-theme 'whiteboard t)
+;; ============================================================
+;; グローバルキーバインド
+;; ============================================================
+(keymap-global-set "C-h"     #'delete-backward-char)
+(keymap-global-set "C-c c"   #'copy2clipboard)
+(keymap-global-set "C-x O"   #'counter-other-window)
+(keymap-global-set "C-c RET" #'find-file-at-point)
+;; M-x は vertico が自動強化するので counsel-M-x は不要
+;; C-s / C-r / C-c g / C-c f は consult の :bind で設定済み
 
-;; Global Settings
-(require 'dired)
-(electric-pair-mode t)
-(global-display-line-numbers-mode)
-(setq-default indent-tabs-mode nil)
-(set-language-environment "UTF-8")
-(add-hook 'before-save-hook 'delete-trailing-whitespace)
-(setq make-backup-files nil)
-(setq auto-save-default nil)
-(setq create-lockfiles nil)
-(setq dired-dwim-target t)
+;; ============================================================
+;; whitespace-mode + highlight-indent-guides
+;; ============================================================
+(use-package whitespace
+  :ensure nil
+  :hook (prog-mode . whitespace-mode)   ; BUG FIX: was global-whitespace-mode
+  :custom
+  (whitespace-style '(face
+                      tabs
+                      trailing
+                      space-before-tab
+                      indentation
+                      empty
+                      space-after-tab
+                      tab-mark)))
 
-(add-hook 'prog-mode-hook 'highlight-indent-guides-mode)
-(add-hook 'prog-mode-hook 'global-whitespace-mode)
-(add-hook 'find-file-hook (lambda () (skk-latin-mode 1)))
+(use-package highlight-indent-guides
+  :ensure t
+  :hook (prog-mode . highlight-indent-guides-mode)
+  :custom
+  (highlight-indent-guides-method 'character))
 
-;; Global Key Binds
-(define-key global-map (kbd "C-h" ) 'delete-backward-char)
-(define-key global-map (kbd "M-x") 'counsel-M-x)
-(define-key global-map (kbd "C-s") 'swiper-isearch)
-(define-key global-map (kbd "C-r") 'swiper-isearch-backward)
-(define-key global-map (kbd "C-c g") 'counsel-git-grep)
-(define-key global-map (kbd "C-c f") 'counsel-git)
-(define-key global-map (kbd "C-c c") 'copy2clipboard)
-(define-key global-map (kbd "C-x O") 'counter-other-window)
-(define-key global-map (kbd "C-c RET") 'find-file-at-point)
+;; ============================================================
+;; ddskk (日本語入力 SKK)
+;; ============================================================
+(use-package ddskk
+  :ensure t
+  :hook (find-file . (lambda () (skk-latin-mode 1)))
+  :custom
+  (default-input-method "japanese-skk")
+  (skk-server-host "localhost")
+  (skk-server-portnum 1178)
+  (skk-jisyo-code 'utf-8)
+  (skk-egg-like-newline t)
+  (skk-show-annotation t)
+  (skk-delete-implies-kakutei nil)
+  (skk-annotation-delay 0)
+  (skk-show-tooltip t)
+  :config
+  (setq skk-rom-kana-rule-list
+        (append '(("c" nil skk-abbrev-mode))
+                skk-rom-kana-rule-list))
+  (defconst overriding-skk-rom-kana-base-rule-list
+    (seq-filter
+     (lambda (x)
+       (cond ((stringp (car x))
+              (not (string= (substring (car x) 0 1) "c")))))
+     skk-rom-kana-base-rule-list))
+  (setq skk-rule-tree
+        (skk-compile-rule-list
+         overriding-skk-rom-kana-base-rule-list
+         skk-rom-kana-rule-list)))
 
-;; skk Settings
-(require 'skk)
-(setq default-input-method "japanese-skk")
-(setq skk-server-host "localhost")
-(setq skk-server-portnum 1178)
-(setq skk-jisyo-code 'utf-8)
-(setq skk-egg-like-newline t)
-(setq skk-show-annotation t)
-(setq skk-delete-implies-kakutei nil)
-(setq skk-annotation-delay 0)
-(setq skk-show-tooltip t)
+;; ============================================================
+;; バージョン管理 (magit + forge + git-gutter)
+;; ============================================================
+(use-package magit
+  :ensure t
+  :custom
+  (magit-diff-refine-hunk t)
+  (magit-display-buffer-function
+   (lambda (buffer)
+     (display-buffer buffer '(display-buffer-same-window)))))
 
-(setq skk-rom-kana-rule-list
-      (append '(("c" nil skk-abbrev-mode)
-                )
-              skk-rom-kana-rule-list))
-(defconst overriding-skk-rom-kana-base-rule-list
-  (seq-filter (lambda (x) (cond ((stringp (car x)) (not (string= (substring (car x) 0 1) "c"))))) skk-rom-kana-base-rule-list)
-              )
+(use-package forge
+  :ensure t
+  :after magit
+  :bind
+  (:map magit-mode-map
+   ("C-c C-w" . forge-browse-dwim)))
 
-(setq skk-rule-tree
-      (skk-compile-rule-list
-       overriding-skk-rom-kana-base-rule-list skk-rom-kana-rule-list))
+(use-package git-gutter-fringe
+  :ensure t
+  :config
+  (global-git-gutter-mode t))
 
-;; Git Settings
-(require 'magit-mode)
-(with-eval-after-load 'magit
-  (require 'forge))
-(define-key magit-mode-map (kbd "C-c C-w") 'forge-browse-dwim)
-(require 'magit-diff)
-(setq magit-diff-refine-hunk t)
+;; ============================================================
+;; GitHub Copilot (straight.el でインストール済み)
+;; ============================================================
+(use-package copilot
+  :ensure nil
+  :hook (prog-mode . copilot-mode)
+  :bind
+  (:map copilot-completion-map
+   ("C-p"   . copilot-previous-completion)
+   ("C-n"   . copilot-next-completion)
+   ("<tab>" . copilot-accept-completion)
+   ("TAB"   . copilot-accept-completion)))
 
-(setq magit-display-buffer-function
-      (lambda (buffer)
-        (display-buffer buffer '(display-buffer-same-window))))
+;; ============================================================
+;; eglot (Emacs 29 組み込み LSP クライアント)
+;; ============================================================
+(use-package eglot
+  :ensure nil
+  :config
+  (add-to-list 'eglot-server-programs
+               '((ruby-mode ruby-ts-mode) . ("ruby-lsp")))
+  (add-to-list 'eglot-server-programs
+               '((typescript-ts-mode tsx-ts-mode web-mode) . ("typescript-language-server" "--stdio")))
+  ;; eglot + corfu の補完スタイル
+  (setq completion-category-overrides '((eglot (styles orderless)))))
 
+;; ============================================================
+;; flycheck
+;; ============================================================
+(use-package flycheck
+  :ensure t
+  :hook (after-init . global-flycheck-mode)
+  :custom
+  (flycheck-indication-mode 'left-margin)
+  (flycheck-disabled-checkers '(emacs-lisp-checkdoc)))
 
-;; GitHub Copilot Settings
-(require 'copilot)
-(add-hook 'prog-mode-hook 'copilot-mode)
+;; ============================================================
+;; treesit-auto (tree-sitter グラマー自動管理)
+;; ============================================================
+(use-package treesit-auto
+  :ensure t
+  :custom
+  (treesit-auto-install 'prompt)
+  :config
+  (treesit-auto-add-to-auto-mode-alist 'all)
+  (global-treesit-auto-mode))
 
-(with-eval-after-load 'company
-  ;; disable inline previews
-  (delq 'company-preview-if-just-one-frontend company-frontends))
+;; ============================================================
+;; Ruby
+;; ============================================================
+(use-package ruby-ts-mode
+  :ensure nil
+  :hook
+  ((ruby-ts-mode . eglot-ensure)
+   (ruby-ts-mode . rubocop-mode)
+   (ruby-ts-mode . (lambda ()
+                     (setq flycheck-checker 'ruby-rubocop)))))
 
-(define-key copilot-completion-map (kbd "C-p") 'copilot-previous-completion)
-(define-key copilot-completion-map (kbd "C-n") 'copilot-next-completion)
-(define-key copilot-completion-map (kbd "<tab>") 'copilot-accept-completion)
-(define-key copilot-completion-map (kbd "TAB") 'copilot-accept-completion)
+(use-package rubocop
+  :ensure t)
 
-;; whitespace Settings
-(require 'whitespace)
-(setq whitespace-style '(face
-                         tabs
-                         ;;spaces
-                         trailing
-                         ;;lines
-                         space-before-tab
-                         ;;newline
-                         indentation
-                         empty
-                         space-after-tab
-                         ;;space-mark
-                         tab-mark
-                         ;;newline-mark
-                         ))
+(use-package rspec-mode
+  :ensure t
+  :custom
+  (rspec-spec-command "bin/docker/rspec")
+  (rspec-use-bundler-when-possible nil)
+  (rspec-use-relative-path t))
 
-
-;; ivy Settings
-(require 'ivy)
-(ivy-mode 1)
-(setq ivy-use-virtual-buffers t)
-(setq ivy-count-format "(%d/%d) ")
-
-
-;; company Settings
-(require 'company)
-(global-company-mode)
-(setq company-idle-delay 0)
-(setq company-minimum-prefix-length 1)
-(setq company-selection-wrap-around t)
-(define-key company-active-map (kbd "C-n") 'company-select-next)
-(define-key company-active-map (kbd "C-p") 'company-select-previous)
-(define-key company-active-map (kbd "C-h") nil)
-
-
-;; eglot Settings
-(require 'eglot)
-(add-hook 'ruby-mode-hook 'eglot-ensure)
-(add-hook 'web-mode-hook 'eglot-ensure)
-(add-hook 'julia-mode-hook 'eglot-ensure)
-
-;; flycheck Settings
-(require 'flycheck)
-(global-flycheck-mode)
-(setq flycheck-indication-mode 'left-margin)
-
-(setq flycheck-disabled-checkers '(emacs-lisp-checkdoc))
-
-
-;; Ruby Settings
-(require 'ruby-mode)
-(require 'rubocop)
-(add-hook 'ruby-mode-hook 'rubocop-mode)
-(add-hook 'ruby-mode-hook
-          (lambda ()
-            (setq flycheck-checker 'ruby-rubocop)))
 (setq ruby-insert-encoding-magic-comment nil)
 
-(add-to-list 'eglot-server-programs
-             '(ruby-mode . ("ruby-lsp")))
+;; ============================================================
+;; TypeScript / TSX (組み込み ts-mode)
+;; ============================================================
+(use-package typescript-ts-mode
+  :ensure nil
+  :hook
+  ((typescript-ts-mode . eglot-ensure)
+   (tsx-ts-mode        . eglot-ensure)))
 
-;; Rspec Settings
-(require 'rspec-mode)
-(setq rspec-spec-command "bin/docker/rspec")
-(setq rspec-use-bundler-when-possible nil)
-(setq rspec-use-relative-path t)
+;; ============================================================
+;; web-mode (HTML と Vue のみ)
+;; ============================================================
+(use-package web-mode
+  :ensure t
+  :mode (("\\.html?\\'" . web-mode)
+         ("\\.vue\\'"   . web-mode))
+  :hook (web-mode . eglot-ensure)
+  :custom
+  (web-mode-markup-indent-offset 2)
+  (web-mode-css-indent-offset 2)
+  (web-mode-code-indent-offset 2))
 
-;; git-gutter Settings
-(require 'git-gutter)
-(global-git-gutter-mode)
+;; ============================================================
+;; JSON (組み込み json-ts-mode)
+;; ============================================================
+(use-package json-ts-mode
+  :ensure nil
+  :custom (js-indent-level 2))
 
-(require 'yaml-mode)
-(add-to-list 'auto-mode-alist '("\\.ya?ml\\'" . yaml-mode))
+;; ============================================================
+;; YAML (組み込み yaml-ts-mode)
+;; ============================================================
+(use-package yaml-ts-mode
+  :ensure nil)
 
-(require 'web-mode)
-(add-to-list 'auto-mode-alist '("\\.html?\\'" . web-mode))
-(add-to-list 'auto-mode-alist '("\\.[tj]sx?\\'" . web-mode))
+;; ============================================================
+;; CSS / SCSS
+;; ============================================================
+(use-package css-mode
+  :ensure nil
+  :custom (css-indent-offset 2))
 
-(require 'markdown-mode)
-(add-to-list 'auto-mode-alist '("\\.md\\'" . markdown-mode))
+;; ============================================================
+;; Markdown
+;; ============================================================
+(use-package markdown-mode
+  :ensure t
+  :mode "\\.md\\'")
 
-;; web-mode Settings
-(setq web-mode-markup-indent-offset 2)
-(setq web-mode-css-indent-offset 2)
-(setq web-mode-code-indent-offset 2)
+;; ============================================================
+;; ユーティリティ
+;; ============================================================
+(use-package string-inflection :ensure t)
+(use-package multiple-cursors  :ensure t)
+(use-package open-junk-file    :ensure t)
+(use-package find-file-in-project :ensure t)
+(use-package jest              :ensure t)
+(use-package adoc-mode         :ensure t)
+(use-package csv-mode          :ensure t)
+(use-package sqlformat         :ensure t)
 
-(add-to-list 'eglot-server-programs
-             '(web-mode . ("typescript-language-server" "--stdio")))
+;; ============================================================
+;; Claude Code / Claude API 連携
+;; ============================================================
 
-;; TypeScript Lint Settings
-(add-hook 'web-mode-hook
-          (lambda ()
-            (when (string-equal "tsx" (file-name-extension buffer-file-name))
-              (tide-setup))))
+;; emacsclient が使えるようにサーバーを起動（daemon モード以外のフォールバック）
+(unless (server-running-p)
+  (server-start))
 
-(add-hook 'web-mode-hook
-          (lambda ()
-            (when (string-equal "ts" (file-name-extension buffer-file-name))
-              (tide-setup))))
+;; eat: ターミナルエミュレータ（claude-code-ide のバックエンド）
+(use-package eat
+  :ensure t)
 
-(add-hook 'web-mode-hook
-          (lambda ()
-            (when (string-equal "vue" (file-name-extension buffer-file-name))
-              (tide-setup))))
+;; vterm: claude-code-ide のデフォルトターミナルバックエンド
+(use-package vterm
+  :ensure t
+  :custom
+  ;; C-h をグローバルで delete-backward-char にしているため、
+  ;; vterm 内でもターミナルに送信されるよう exceptions から除外
+  (vterm-keymap-exceptions '("C-c" "C-x" "C-u" "C-g" "C-l" "M-x" "M-o" "C-v" "M-v" "C-y" "M-y"))
+  :config
+  ;; exceptions だけでは反映されない場合があるため明示的にバインド
+  (define-key vterm-mode-map (kbd "C-h") #'vterm--self-insert))
 
-(flycheck-add-mode 'typescript-tslint 'web-mode)
+;; claude-code-ide: Emacs 内で Claude Code を起動（straight.el でインストール済み）
+(use-package claude-code-ide
+  :ensure nil
+  :bind ("C-c C-c" . claude-code-ide-menu))
 
-;; json-mode Settings
-(require 'json-mode)
-(add-to-list 'auto-mode-alist '("\\.json\\'" . json-mode))
-(setq json-reformat:indent-width 2)
-(setq js-indent-level 2)
-
-
-;; [s]css-mode Settings
-(require 'css-mode)
-(setq css-indent-offset 2)
-
-
-;; julia-mode Settings
-(require 'julia-mode)
-(require 'julia-repl)
-(add-hook 'julia-mode-hook 'julia-repl-mode)
-(add-to-list 'eglot-server-programs
-             '(julia-mode . ("julia" "-e using LanguageServer, LanguageServer.SymbolServer; runserver()")))
-(define-key julia-mode-map (kbd "C-c e") 'julia-repl-send-region-or-line)
+;; gptel: Emacs 内で Claude API を直接使う
+(use-package gptel
+  :ensure t
+  :custom
+  (gptel-model 'claude-sonnet-4-6)
+  :config
+  (gptel-make-anthropic "Claude"
+    :stream t
+    :key (lambda () (getenv "ANTHROPIC_API_KEY"))))
 
 ;;; init.el ends here
