@@ -86,12 +86,16 @@
 ;; ============================================================
 (set-language-environment "UTF-8")
 (setq-default indent-tabs-mode nil)
+(setq inhibit-startup-screen t)
+(setq initial-scratch-message nil)
 (setq make-backup-files nil)
 (setq auto-save-default nil)
 (setq create-lockfiles nil)
 (electric-pair-mode t)
 (global-display-line-numbers-mode t)
 (add-hook 'before-save-hook #'delete-trailing-whitespace)
+
+(global-set-key (kbd "s-z") #'undo)
 
 (use-package dired
   :ensure nil
