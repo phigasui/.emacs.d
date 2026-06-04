@@ -47,6 +47,34 @@
 (setq use-package-always-ensure t)
 
 ;; ============================================================
+;; exec-path-from-shell
+;;   GUI (Finder/Dock) から起動した Emacs.app はシェルの PATH 等を
+;;   引き継がないため、eglot が ruby-lsp を、consult-ripgrep が rg を
+;;   見つけられない。シェルから環境変数を取り込んで解消する。
+;;   PATH 系 (homebrew / mise / ~/.local/bin) は ~/.zshrc に書かれて
+;;   いるため、ログインシェルだけでは読めない。-i を付けて
+;;   インタラクティブシェルとして環境を取得する。
+;; ============================================================
+(use-package exec-path-from-shell
+  :ensure t
+  :if (memq window-system '(mac ns x))
+  :custom
+  (exec-path-from-shell-arguments '("-l" "-i"))
+  :config
+  (dolist (var '("ANTHROPIC_API_KEY"))
+    (add-to-list 'exec-path-from-shell-variables var))
+  (exec-path-from-shell-initialize)
+  ;; mise の shims は `mise activate` の precmd フック経由で PATH に
+  ;; 追加されるため、exec-path-from-shell では取り込めない（ruby-lsp が
+  ;; 見つからない原因）。shims ディレクトリを明示的に追加する。
+  ;; shim 自体がカレントディレクトリから tool のバージョンを解決するため、
+  ;; static なパスを足すだけで repo ごとの ruby が選ばれる。
+  (let ((mise-shims (expand-file-name "~/.local/share/mise/shims")))
+    (when (file-directory-p mise-shims)
+      (add-to-list 'exec-path mise-shims)
+      (setenv "PATH" (concat mise-shims path-separator (getenv "PATH"))))))
+
+;; ============================================================
 ;; custom.el に Custom の書き込みを分離
 ;; ============================================================
 (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
