@@ -224,11 +224,79 @@
   (interactive)
   (other-window -1))
 
+(defun copy-file-path-with-line ()
+  "Copy \"<repo-relative-path>:<line>\" of the current buffer to the clipboard.
+For example, `app/sample.rb:455'.  The path is relative to the
+project (VC) root; if no root is found it falls back to the
+absolute file name."
+  (interactive)
+  (let ((file (buffer-file-name)))
+    (if (not file)
+        (user-error "Current buffer is not visiting a file")
+      (let* ((root (or (when-let ((proj (project-current)))
+                         (project-root proj))
+                       (vc-root-dir)))
+             (path (if root
+                       (file-relative-name file root)
+                     file))
+             (result (format "%s:%d" path (line-number-at-pos))))
+        (kill-new result)
+        (message "Copied: %s" result)))))
+
+(defun git-remote-url-to-web-base (url)
+  "Convert a git remote URL to its https web base (no trailing slash, no .git).
+Handles `git@host:owner/repo.git', `ssh://git@host/owner/repo.git'
+and `https://host/owner/repo.git' forms."
+  (let ((u (replace-regexp-in-string "\\.git\\'" "" (string-trim url))))
+    (cond
+     ;; scp 形式: git@github.com:owner/repo
+     ((string-match "\\`[^@]+@\\([^:]+\\):\\(.+\\)\\'" u)
+      (format "https://%s/%s" (match-string 1 u) (match-string 2 u)))
+     ;; ssh://git@github.com/owner/repo
+     ((string-match "\\`ssh://\\(?:[^@]+@\\)?\\([^/]+\\)/\\(.+\\)\\'" u)
+      (format "https://%s/%s" (match-string 1 u) (match-string 2 u)))
+     ;; 既に https。埋め込まれた user@ があれば落とす
+     ((string-match "\\`https?://" u)
+      (replace-regexp-in-string "\\`\\(https?://\\)[^@/]+@" "\\1" u))
+     (t (user-error "Unsupported remote URL: %s" url)))))
+
+(defun copy-github-permalink ()
+  "Copy a GitHub permalink for the current line (or region) to the clipboard.
+The link points at the current commit SHA so it never drifts.
+Note: the commit must be pushed for the link to resolve on GitHub."
+  (interactive)
+  (let ((file (buffer-file-name)))
+    (unless file
+      (user-error "Current buffer is not visiting a file"))
+    (let* ((default-directory (file-name-directory file))
+           (remote (car (process-lines "git" "config" "--get" "remote.origin.url")))
+           (sha    (car (process-lines "git" "rev-parse" "HEAD")))
+           (root   (car (process-lines "git" "rev-parse" "--show-toplevel")))
+           (rel    (file-relative-name file root))
+           (base   (git-remote-url-to-web-base remote))
+           (beg    (if (use-region-p) (region-beginning) (point)))
+           (l1     (line-number-at-pos beg))
+           ;; リージョンの終端が行頭なら、その手前の行までを範囲とする
+           (l2     (when (use-region-p)
+                     (let ((end (region-end)))
+                       (line-number-at-pos
+                        (if (and (> end beg) (eq (char-before end) ?\n))
+                            (1- end)
+                          end)))))
+           (frag   (if (and l2 (/= l1 l2))
+                       (format "#L%d-L%d" l1 l2)
+                     (format "#L%d" l1)))
+           (url    (format "%s/blob/%s/%s%s" base sha rel frag)))
+      (kill-new url)
+      (message "Copied: %s" url))))
+
 ;; ============================================================
 ;; グローバルキーバインド
 ;; ============================================================
 (keymap-global-set "C-h"     #'delete-backward-char)
 (keymap-global-set "C-c c"   #'copy2clipboard)
+(keymap-global-set "C-c l"   #'copy-file-path-with-line)
+(keymap-global-set "C-c L"   #'copy-github-permalink)
 (keymap-global-set "C-x O"   #'counter-other-window)
 (keymap-global-set "C-c RET" #'find-file-at-point)
 ;; M-x は vertico が自動強化するので counsel-M-x は不要
