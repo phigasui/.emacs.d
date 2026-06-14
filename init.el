@@ -4,29 +4,6 @@
 ;;; Code:
 
 ;; ============================================================
-;; straight.el bootstrap (copilot と prisma-mode のみ)
-;; ============================================================
-(defvar bootstrap-version)
-(let ((bootstrap-file
-       (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
-      (bootstrap-version 6))
-  (unless (file-exists-p bootstrap-file)
-    (with-current-buffer
-        (url-retrieve-synchronously
-         "https://raw.githubusercontent.com/radian-software/straight.el/develop/install.el"
-         'silent 'inhibit-cookies)
-      (goto-char (point-max))
-      (eval-print-last-sexp)))
-  (load bootstrap-file nil 'nomessage))
-
-(straight-use-package
- '(copilot :type git :host github :repo "copilot-emacs/copilot.el"
-           :files ("dist" "*.el")))
-
-(straight-use-package
- '(claude-code-ide :type git :host github :repo "manzaltu/claude-code-ide.el"))
-
-;; ============================================================
 ;; package.el
 ;; ============================================================
 (require 'package)
@@ -379,19 +356,6 @@ Note: the commit must be pushed for the link to resolve on GitHub."
   (global-git-gutter-mode t))
 
 ;; ============================================================
-;; GitHub Copilot (straight.el でインストール済み)
-;; ============================================================
-(use-package copilot
-  :ensure nil
-  :hook (prog-mode . copilot-mode)
-  :bind
-  (:map copilot-completion-map
-   ("C-p"   . copilot-previous-completion)
-   ("C-n"   . copilot-next-completion)
-   ("<tab>" . copilot-accept-completion)
-   ("TAB"   . copilot-accept-completion)))
-
-;; ============================================================
 ;; eglot (Emacs 29 組み込み LSP クライアント)
 ;; ============================================================
 (use-package eglot
@@ -517,25 +481,22 @@ Note: the commit must be pushed for the link to resolve on GitHub."
 (unless (server-running-p)
   (server-start))
 
-;; eat: ターミナルエミュレータ（claude-code-ide のバックエンド）
+;; eat: ターミナルエミュレータ
 (use-package eat
   :ensure t)
 
-;; vterm: claude-code-ide のデフォルトターミナルバックエンド
+;; vterm: ターミナルエミュレータ
 (use-package vterm
   :ensure t
   :custom
+  ;; daemon 起動時にモジュールコンパイルの確認プロンプトでブロックしないようにする
+  (vterm-always-compile-module t)
   ;; C-h をグローバルで delete-backward-char にしているため、
   ;; vterm 内でもターミナルに送信されるよう exceptions から除外
   (vterm-keymap-exceptions '("C-c" "C-x" "C-u" "C-g" "C-l" "M-x" "M-o" "C-v" "M-v" "C-y" "M-y"))
   :config
   ;; exceptions だけでは反映されない場合があるため明示的にバインド
   (define-key vterm-mode-map (kbd "C-h") #'vterm--self-insert))
-
-;; claude-code-ide: Emacs 内で Claude Code を起動（straight.el でインストール済み）
-(use-package claude-code-ide
-  :ensure nil
-  :bind ("C-c C-c" . claude-code-ide-menu))
 
 ;; gptel: Emacs 内で Claude API を直接使う
 (use-package gptel
