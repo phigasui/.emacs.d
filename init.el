@@ -260,11 +260,10 @@ and `https://host/owner/repo.git' forms."
       (replace-regexp-in-string "\\`\\(https?://\\)[^@/]+@" "\\1" u))
      (t (user-error "Unsupported remote URL: %s" url)))))
 
-(defun copy-github-permalink ()
-  "Copy a GitHub permalink for the current line (or region) to the clipboard.
+(defun github-permalink-url ()
+  "Build a GitHub permalink for the current line (or region).
 The link points at the current commit SHA so it never drifts.
 Note: the commit must be pushed for the link to resolve on GitHub."
-  (interactive)
   (let ((file (buffer-file-name)))
     (unless file
       (user-error "Current buffer is not visiting a file"))
@@ -285,10 +284,22 @@ Note: the commit must be pushed for the link to resolve on GitHub."
                           end)))))
            (frag   (if (and l2 (/= l1 l2))
                        (format "#L%d-L%d" l1 l2)
-                     (format "#L%d" l1)))
-           (url    (format "%s/blob/%s/%s%s" base sha rel frag)))
-      (kill-new url)
-      (message "Copied: %s" url))))
+                     (format "#L%d" l1))))
+      (format "%s/blob/%s/%s%s" base sha rel frag))))
+
+(defun copy-github-permalink ()
+  "Copy a GitHub permalink for the current line (or region) to the clipboard."
+  (interactive)
+  (let ((url (github-permalink-url)))
+    (kill-new url)
+    (message "Copied: %s" url)))
+
+(defun browse-github-permalink ()
+  "Open a GitHub permalink for the current line (or region) in the browser."
+  (interactive)
+  (let ((url (github-permalink-url)))
+    (browse-url url)
+    (message "Opening: %s" url)))
 
 ;; ============================================================
 ;; グローバルキーバインド
@@ -297,6 +308,7 @@ Note: the commit must be pushed for the link to resolve on GitHub."
 (keymap-global-set "C-c c"   #'copy2clipboard)
 (keymap-global-set "C-c l"   #'copy-file-path-with-line)
 (keymap-global-set "C-c L"   #'copy-github-permalink)
+(keymap-global-set "C-c o"   #'browse-github-permalink)
 (keymap-global-set "C-x O"   #'counter-other-window)
 (keymap-global-set "C-c RET" #'find-file-at-point)
 ;; M-x は vertico が自動強化するので counsel-M-x は不要
@@ -437,7 +449,24 @@ Note: the commit must be pushed for the link to resolve on GitHub."
                      (setq flycheck-checker 'ruby-rubocop)))))
 
 (use-package rubocop
-  :ensure t)
+  :ensure t
+  :bind (:map rubocop-mode-map
+              ("C-c C-r a" . rubocop-autocorrect-current-file)))
+
+(defun rubocop-autocorrect-current-file ()
+  "Run `rubocop -A` on the current file and revert the buffer."
+  (interactive)
+  (save-buffer)
+  (let ((file (buffer-file-name)))
+    (unless file
+      (user-error "Buffer is not visiting a file"))
+    (message "Running rubocop -A %s..." (file-name-nondirectory file))
+    (let ((exit-code (call-process "rubocop" nil nil nil "-A" file)))
+      (if (memq exit-code '(0 1))
+          (progn
+            (revert-buffer t t t)
+            (message "rubocop -A finished."))
+        (message "rubocop -A failed with exit code %d" exit-code)))))
 
 (use-package rspec-mode
   :ensure t
