@@ -1,5 +1,5 @@
 ;;; init.el --- Personal Emacs configuration -*- lexical-binding: t; -*-
-;;; Commentary: Emacs 29+ configuration
+;;; Commentary: Emacs 30+ configuration
 
 ;;; Code:
 
@@ -72,6 +72,11 @@
 (global-display-line-numbers-mode t)
 (add-hook 'before-save-hook #'delete-trailing-whitespace)
 
+;; Emacs 30 組み込み機能
+(which-key-mode 1)               ; プレフィックスキー後に続きの候補を表示
+(editorconfig-mode 1)            ; リポジトリの .editorconfig を尊重
+(pixel-scroll-precision-mode 1)  ; macOS トラックパッドのなめらかスクロール
+
 (global-set-key (kbd "s-z") #'undo)
 
 (use-package dired
@@ -127,6 +132,17 @@
   :ensure nil
   :init
   (savehist-mode))
+
+;; consult-recent-file (C-c r) が使う最近開いたファイルの履歴
+(use-package recentf
+  :ensure nil
+  :init
+  (recentf-mode)
+  :custom
+  (recentf-max-saved-items 200))
+
+;; ファイルを開き直したときにカーソル位置を復元
+(save-place-mode 1)
 
 (use-package consult
   :ensure t
@@ -345,7 +361,7 @@ Note: the commit must be pushed for the link to resolve on GitHub."
          skk-rom-kana-rule-list)))
 
 ;; ============================================================
-;; バージョン管理 (magit + forge + git-gutter)
+;; バージョン管理 (magit + forge + diff-hl)
 ;; ============================================================
 (use-package magit
   :ensure t
@@ -362,10 +378,14 @@ Note: the commit must be pushed for the link to resolve on GitHub."
   (:map magit-mode-map
    ("C-c C-w" . forge-browse-dwim)))
 
-(use-package git-gutter-fringe
+(use-package diff-hl
   :ensure t
+  :hook ((magit-pre-refresh  . diff-hl-magit-pre-refresh)
+         (magit-post-refresh . diff-hl-magit-post-refresh))
+  :init
+  (global-diff-hl-mode)
   :config
-  (global-git-gutter-mode t))
+  (diff-hl-flydiff-mode))  ; 未保存の変更もリアルタイム反映
 
 ;; ============================================================
 ;; eglot (Emacs 29 組み込み LSP クライアント)
@@ -378,7 +398,8 @@ Note: the commit must be pushed for the link to resolve on GitHub."
   (add-to-list 'eglot-server-programs
                '((typescript-ts-mode tsx-ts-mode web-mode) . ("typescript-language-server" "--stdio")))
   ;; eglot + corfu の補完スタイル
-  (setq completion-category-overrides '((eglot (styles orderless)))))
+  ;; setq だと orderless 側で設定した file の override を破壊するので add-to-list
+  (add-to-list 'completion-category-overrides '(eglot (styles orderless))))
 
 ;; ============================================================
 ;; flycheck
@@ -507,6 +528,8 @@ Note: the commit must be pushed for the link to resolve on GitHub."
 ;; ============================================================
 
 ;; emacsclient が使えるようにサーバーを起動（daemon モード以外のフォールバック）
+;; (setq server-use-tcp t)
+;; (setq server-host "0.0.0.0")
 (unless (server-running-p)
   (server-start))
 
@@ -531,7 +554,8 @@ Note: the commit must be pushed for the link to resolve on GitHub."
 (use-package gptel
   :ensure t
   :custom
-  (gptel-model 'claude-sonnet-4-6)
+  ;; 他の選択肢: claude-opus-4-8 (高性能) / claude-fable-5 (最上位)
+  (gptel-model 'claude-sonnet-5)
   :config
   (gptel-make-anthropic "Claude"
     :stream t

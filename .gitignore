@@ -59,3 +59,16 @@ forge-database.sqlite
 
 # packages
 /straight/
+
+# savehist / project.el の状態ファイル
+/history
+/projects
+
+# tree-sitter グラマー (.dylib はアーキテクチャ依存の生成物。treesit-auto が再ビルドする)
+/tree-sitter/
+
+# native-comp キャッシュ
+/eln-cache/
+
+# multiple-cursors のコマンド許可リスト (ローカル生成物)
+.mc-lists.el
