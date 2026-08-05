@@ -439,19 +439,33 @@ Note: the commit must be pushed for the link to resolve on GitHub."
               ("C-c C-r a" . rubocop-autocorrect-current-file)))
 
 (defun rubocop-autocorrect-current-file ()
-  "Run `rubocop -A` on the current file and revert the buffer."
+  "Run `rubocop -A` on the current file and show output in *rubocop* buffer."
   (interactive)
   (save-buffer)
-  (let ((file (buffer-file-name)))
+  (let ((file (buffer-file-name))
+        (source-buf (current-buffer)))
     (unless file
       (user-error "Buffer is not visiting a file"))
-    (message "Running rubocop -A %s..." (file-name-nondirectory file))
-    (let ((exit-code (call-process "rubocop" nil nil nil "-A" file)))
-      (if (memq exit-code '(0 1))
-          (progn
-            (revert-buffer t t t)
-            (message "rubocop -A finished."))
-        (message "rubocop -A failed with exit code %d" exit-code)))))
+    (let ((buf (get-buffer "*rubocop*")))
+      (when buf (kill-buffer buf)))
+    (let* ((buf (get-buffer-create "*rubocop*"))
+           (proc (start-process "rubocop" buf "rubocop" "-A" file)))
+      (with-current-buffer buf
+        (insert (format "$ rubocop -A %s\n\n" (file-name-nondirectory file))))
+      (display-buffer buf)
+      (message "Running rubocop -A %s..." (file-name-nondirectory file))
+      (set-process-sentinel
+       proc
+       (lambda (process _event)
+         (let ((exit-code (process-exit-status process)))
+           (with-current-buffer (process-buffer process)
+             (goto-char (point-max))
+             (insert (format "\n\nProcess finished with exit code %d" exit-code))
+             (special-mode))
+           (when (memq exit-code '(0 1))
+             (with-current-buffer source-buf
+               (revert-buffer t t t)))
+           (message "rubocop -A finished (exit %d)" exit-code)))))))
 
 (use-package rspec-mode
   :ensure t
