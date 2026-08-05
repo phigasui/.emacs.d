@@ -13,8 +13,29 @@
         ("nongnu" . "https://elpa.nongnu.org/nongnu/")))
 (package-initialize)
 
-;; 毎起動のネットワーク通信を避ける（パッケージが未インストールの時のみ取得）
-(unless package-archive-contents
+;; 毎起動のネットワーク通信は避けつつ、キャッシュが古すぎる場合は取得し直す。
+;; MELPA は基本的に最新版しか配布しないため、archive-contents キャッシュが
+;; 古いままだと「キャッシュに載っているバージョンが実際にはもう存在しない」
+;; 状態になり、use-package のインストールが 404 で失敗する（例:
+;; "Failed to install diff-hl: ... Not found"）。7日以上古ければ更新する。
+(defun my/package-archive-contents-stale-p (max-age-days)
+  "package-archive-contents のキャッシュが MAX-AGE-DAYS 日より古いか判定する。"
+  (or (not package-archive-contents)
+      (catch 'stale
+        (dolist (archive package-archives)
+          (let ((file (expand-file-name
+                       (format "archives/%s/archive-contents" (car archive))
+                       package-user-dir)))
+            (when (or (not (file-exists-p file))
+                      (> (float-time
+                          (time-subtract (current-time)
+                                         (file-attribute-modification-time
+                                          (file-attributes file))))
+                         (* max-age-days 24 60 60)))
+              (throw 'stale t))))
+        nil)))
+
+(when (my/package-archive-contents-stale-p 7)
   (package-refresh-contents))
 
 ;; ============================================================
