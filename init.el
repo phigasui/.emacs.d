@@ -152,7 +152,8 @@
    ("C-c g" . consult-ripgrep)
    ("C-c f" . project-find-file)
    ("C-c b" . consult-buffer)
-   ("C-c r" . consult-recent-file))
+   ("C-c r" . consult-recent-file)
+   ("M-g f" . consult-flymake))
   )
 
 (use-package embark
@@ -402,14 +403,25 @@ Note: the commit must be pushed for the link to resolve on GitHub."
   (add-to-list 'completion-category-overrides '(eglot (styles orderless))))
 
 ;; ============================================================
-;; flycheck
+;; flymake (組み込み。eglot が診断を流し込む)
 ;; ============================================================
-(use-package flycheck
-  :ensure t
-  :hook (after-init . global-flycheck-mode)
+(use-package flymake
+  :ensure nil
+  :hook (prog-mode . flymake-mode)
   :custom
-  (flycheck-indication-mode 'left-margin)
-  (flycheck-disabled-checkers '(emacs-lisp-checkdoc)))
+  ;; Emacs 30: fringe ではなく margin に表示 (flycheck の left-margin 相当)
+  (flymake-indicator-type 'margins)
+  :bind
+  (:map flymake-mode-map
+   ("M-g n" . flymake-goto-next-error)
+   ("M-g p" . flymake-goto-prev-error)
+   ("M-g d" . flymake-show-buffer-diagnostics)))
+
+;; emacs-lisp: checkdoc 診断を無効化 (flycheck-disabled-checkers 相当)
+(add-hook 'emacs-lisp-mode-hook
+          (lambda ()
+            (remove-hook 'flymake-diagnostic-functions
+                         #'elisp-flymake-checkdoc t)))
 
 ;; ============================================================
 ;; treesit-auto (tree-sitter グラマー自動管理)
@@ -428,10 +440,9 @@ Note: the commit must be pushed for the link to resolve on GitHub."
 (use-package ruby-ts-mode
   :ensure nil
   :hook
+  ;; rubocop 診断は ruby-lsp が LSP 経由で報告し eglot が flymake に流す
   ((ruby-ts-mode . eglot-ensure)
-   (ruby-ts-mode . rubocop-mode)
-   (ruby-ts-mode . (lambda ()
-                     (setq flycheck-checker 'ruby-rubocop)))))
+   (ruby-ts-mode . rubocop-mode)))
 
 (use-package rubocop
   :ensure t

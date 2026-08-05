@@ -6,7 +6,7 @@
  '(package-selected-packages
    '(adoc-mode cape consult corfu csv-mode ddskk diff-hl doom-modeline
                doom-themes eat embark embark-consult
-               exec-path-from-shell find-file-in-project flycheck
+               exec-path-from-shell find-file-in-project
                forge gptel highlight-indent-guides jest magit
                marginalia markdown-mode multiple-cursors nerd-icons
                nerd-icons-corfu open-junk-file orderless rspec-mode
