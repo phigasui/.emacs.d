@@ -559,7 +559,7 @@ Note: the commit must be pushed for the link to resolve on GitHub."
 (use-package sqlformat         :ensure t)
 
 ;; ============================================================
-;; Claude Code / Claude API 連携
+;; server
 ;; ============================================================
 
 ;; emacsclient が使えるようにサーバーを起動（daemon モード以外のフォールバック）
@@ -567,33 +567,5 @@ Note: the commit must be pushed for the link to resolve on GitHub."
 ;; (setq server-host "0.0.0.0")
 (unless (server-running-p)
   (server-start))
-
-;; eat: ターミナルエミュレータ
-(use-package eat
-  :ensure t)
-
-;; vterm: ターミナルエミュレータ
-(use-package vterm
-  :ensure t
-  :custom
-  ;; daemon 起動時にモジュールコンパイルの確認プロンプトでブロックしないようにする
-  (vterm-always-compile-module t)
-  ;; C-h をグローバルで delete-backward-char にしているため、
-  ;; vterm 内でもターミナルに送信されるよう exceptions から除外
-  (vterm-keymap-exceptions '("C-c" "C-x" "C-u" "C-g" "C-l" "M-x" "M-o" "C-v" "M-v" "C-y" "M-y"))
-  :config
-  ;; exceptions だけでは反映されない場合があるため明示的にバインド
-  (define-key vterm-mode-map (kbd "C-h") #'vterm--self-insert))
-
-;; gptel: Emacs 内で Claude API を直接使う
-(use-package gptel
-  :ensure t
-  :custom
-  ;; 他の選択肢: claude-opus-4-8 (高性能) / claude-fable-5 (最上位)
-  (gptel-model 'claude-sonnet-5)
-  :config
-  (gptel-make-anthropic "Claude"
-    :stream t
-    :key (lambda () (getenv "ANTHROPIC_API_KEY"))))
 
 ;;; init.el ends here
