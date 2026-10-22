@@ -439,6 +439,11 @@ Note: the commit must be pushed for the link to resolve on GitHub."
   :ensure t
   :custom
   (treesit-auto-install 'prompt)
+  ;; global-treesit-auto-mode はファイルを開くたびに全言語の
+  ;; treesit-language-available-p を呼ぶ。未インストールの grammar は
+  ;; 1つあたり ~0.1 秒かかり、全 62 言語だと数秒ブロックするため、
+  ;; 使う言語に絞る。新しい言語を使うときはここに追加する。
+  (treesit-auto-langs '(bash json ruby tsx typescript yaml))
   :config
   (treesit-auto-add-to-auto-mode-alist 'all)
   (global-treesit-auto-mode))
