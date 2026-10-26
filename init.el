@@ -107,6 +107,30 @@
 ;; ============================================================
 ;; UI / テーマ
 ;; ============================================================
+(require 'seq)
+
+(defvar preferred-fonts
+  '("JetBrains Mono" "SF Mono" "Menlo" "Monaco")
+  "List of preferred monospace font families in descending order of priority.")
+
+(defun find-preferred-font (&optional frame)
+  "Find the first available font from `preferred-fonts' on FRAME."
+  (seq-find (lambda (font)
+              (find-font (font-spec :family font) frame))
+            preferred-fonts))
+
+(defun setup-font (&optional frame)
+  "Configure default font on FRAME if running in a graphic display."
+  (when (display-graphic-p frame)
+    (when-let* ((font (find-preferred-font frame)))
+      (when frame
+        (set-face-attribute 'default frame :family font :height 140))
+      (set-face-attribute 'default nil :family font :height 140))))
+
+(if (daemonp)
+    (add-hook 'after-make-frame-functions #'setup-font)
+  (setup-font))
+
 (use-package nerd-icons
   :ensure t)
 ;; 初回のみ: M-x nerd-icons-install-fonts
@@ -165,16 +189,22 @@
 ;; ファイルを開き直したときにカーソル位置を復元
 (save-place-mode 1)
 
+(defun my-consult-ripgrep-or-grep (&optional dir initial)
+  "Run `consult-ripgrep' if `rg' is available, otherwise `consult-grep'."
+  (interactive "P")
+  (if (executable-find "rg")
+      (consult-ripgrep dir initial)
+    (consult-grep dir initial)))
+
 (use-package consult
   :ensure t
   :bind
   (("C-s"   . consult-line)
    ("C-r"   . consult-line)
-   ("C-c g" . consult-ripgrep)
+   ("C-c g" . my-consult-ripgrep-or-grep)
    ("C-c f" . project-find-file)
    ("C-c b" . consult-buffer)
-   ("C-c r" . consult-recent-file))
-  )
+   ("C-c r" . consult-recent-file)))
 
 (use-package embark
   :ensure t
@@ -223,10 +253,13 @@
 ;; ユーザー関数
 ;; ============================================================
 (defun copy2clipboard ()
-  "Copy region to macOS clipboard."
+  "Copy region to macOS clipboard, or `kill-ring' if pbcopy is unavailable."
   (interactive)
   (when (region-active-p)
-    (shell-command-on-region (region-beginning) (region-end) "pbcopy" nil nil)))
+    (if (executable-find "pbcopy")
+        (shell-command-on-region (region-beginning) (region-end) "pbcopy" nil nil)
+      (kill-ring-save (region-beginning) (region-end))
+      (message "pbcopy not available; copied to kill-ring"))))
 
 (defun sort-js-import-lines (beg end)
   "Sort JS import lines from BEG to END."
@@ -281,6 +314,8 @@ Note: the commit must be pushed for the link to resolve on GitHub."
   (let ((file (buffer-file-name)))
     (unless file
       (user-error "Current buffer is not visiting a file"))
+    (unless (executable-find "git")
+      (user-error "git executable not found"))
     (let* ((default-directory (file-name-directory file))
            (remote (car (process-lines "git" "config" "--get" "remote.origin.url")))
            (sha    (car (process-lines "git" "rev-parse" "HEAD")))
@@ -467,11 +502,13 @@ Note: the commit must be pushed for the link to resolve on GitHub."
 (defun rubocop-autocorrect-current-file ()
   "Run `rubocop -A` on the current file and show output in *rubocop* buffer."
   (interactive)
-  (save-buffer)
   (let ((file (buffer-file-name))
         (source-buf (current-buffer)))
     (unless file
       (user-error "Buffer is not visiting a file"))
+    (unless (executable-find "rubocop")
+      (user-error "RuboCop executable not found"))
+    (save-buffer)
     (let ((buf (get-buffer "*rubocop*")))
       (when buf (kill-buffer buf)))
     (let* ((buf (get-buffer-create "*rubocop*"))
@@ -557,11 +594,29 @@ Note: the commit must be pushed for the link to resolve on GitHub."
 (use-package string-inflection :ensure t)
 (use-package multiple-cursors  :ensure t)
 (use-package open-junk-file    :ensure t)
-(use-package find-file-in-project :ensure t)
+(use-package find-file-in-project
+  :ensure t
+  :config
+  (cond
+   ((executable-find "fd")
+    (setq ffip-use-rust-fd t
+          ffip-rust-fd-executable-name "fd"))
+   ((executable-find "fdfind")
+    (setq ffip-use-rust-fd t
+          ffip-rust-fd-executable-name "fdfind"))
+   (t
+    (setq ffip-use-rust-fd nil))))
 (use-package jest              :ensure t)
 (use-package adoc-mode         :ensure t)
 (use-package csv-mode          :ensure t)
-(use-package sqlformat         :ensure t)
+(use-package sqlformat
+  :ensure t
+  :config
+  (cond
+   ((executable-find "sqlformat")
+    (setq sqlformat-command 'sqlformat))
+   ((executable-find "pg_format")
+    (setq sqlformat-command 'pgformatter))))
 
 ;; ============================================================
 ;; server
