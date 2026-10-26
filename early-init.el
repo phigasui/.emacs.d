@@ -8,9 +8,17 @@
 
 ;; 起動中は GC を実質停止し、起動完了後に現実的な値へ戻す
 (setq gc-cons-threshold most-positive-fixnum)
+
+;; 起動中の正規表現マッチを抑制するため、file-name-handler-alist を一時退避する
+(defvar default-file-name-handler-alist file-name-handler-alist)
+(setq file-name-handler-alist nil)
+
 (add-hook 'emacs-startup-hook
           (lambda ()
             (setq gc-cons-threshold (* 32 1024 1024)) ; 32MB
+            (setq file-name-handler-alist
+                  (delete-dups (append file-name-handler-alist
+                                       default-file-name-handler-alist)))
             (message "Emacs ready in %s with %d GCs"
                      (emacs-init-time) gcs-done)))
 
