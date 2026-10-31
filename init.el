@@ -280,7 +280,7 @@ absolute file name."
   (let ((file (buffer-file-name)))
     (if (not file)
         (user-error "Current buffer is not visiting a file")
-      (let* ((root (or (when-let ((proj (project-current)))
+      (let* ((root (or (when-let* ((proj (project-current)))
                          (project-root proj))
                        (vc-root-dir)))
              (path (if root
@@ -625,6 +625,7 @@ Note: the commit must be pushed for the link to resolve on GitHub."
 ;; emacsclient が使えるようにサーバーを起動（daemon モード以外のフォールバック）
 ;; (setq server-use-tcp t)
 ;; (setq server-host "0.0.0.0")
+(require 'server) ; server-running-p は autoload されない
 (unless (server-running-p)
   (server-start))
 

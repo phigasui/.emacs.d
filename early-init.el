@@ -28,6 +28,17 @@
 ;; native-comp の警告バッファをポップアップさせない
 (setq native-comp-async-report-warnings-errors 'silent)
 
+;; Emacs.app 同梱の libgccjit (GCC 14) は macOS 27 で -mmacosx-version-min=18.0 を渡し、
+;; clang がそれを拒否して native-comp が全滅する (GCC 16 の gcc では 27.0 が渡る)。
+;; sw_vers の実際の版を明示する。同梱 libgccjit が更新されたら外す
+(when (eq system-type 'darwin)
+  (defvar native-comp-driver-options)
+  (with-eval-after-load 'comp
+    (let ((macos (string-to-number (car (process-lines "sw_vers" "-productVersion")))))
+      (when (>= macos 26)
+        (add-to-list 'native-comp-driver-options
+                     (format "-mmacosx-version-min=%d.0" macos) t)))))
+
 ;; 最初のフレーム生成前に UI 要素を確定させ、ちらつきとリサイズを防ぐ
 (push '(tool-bar-lines . 0) default-frame-alist)
 (push '(vertical-scroll-bars . nil) default-frame-alist)
