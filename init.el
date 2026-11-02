@@ -623,10 +623,18 @@ Note: the commit must be pushed for the link to resolve on GitHub."
 ;; ============================================================
 
 ;; emacsclient が使えるようにサーバーを起動（daemon モード以外のフォールバック）
-;; (setq server-use-tcp t)
-;; (setq server-host "0.0.0.0")
+;; TCP 化（Docker 連携）は未採用。必要なら server-use-tcp のみ有効にし、server-host は 0.0.0.0 にしない
 (require 'server) ; server-running-p は autoload されない
 (unless (server-running-p)
   (server-start))
+
+;; emacs_debug の出力バッファ（*Debug* / *Error*）を下部の専用ウィンドウに出す
+(add-to-list 'display-buffer-alist
+             '("\\`\\*\\(Debug\\|Error\\)\\*\\'"
+               (display-buffer-in-side-window)
+               (side . bottom)
+               (slot . 0)
+               (window-height . 0.3)
+               (window-parameters . ((no-delete-other-windows . t)))))
 
 ;;; init.el ends here
