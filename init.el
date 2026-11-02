@@ -452,7 +452,7 @@ Note: the commit must be pushed for the link to resolve on GitHub."
   (add-to-list 'eglot-server-programs
                '((ruby-mode ruby-ts-mode) . ("ruby-lsp")))
   (add-to-list 'eglot-server-programs
-               '((js-ts-mode typescript-ts-mode tsx-ts-mode web-mode) . ("typescript-language-server" "--stdio")))
+               '((typescript-ts-mode tsx-ts-mode web-mode) . ("typescript-language-server" "--stdio")))
   ;; eglot + corfu の補完スタイル
   ;; setq だと orderless 側で設定した file の override を破壊するので add-to-list
   (add-to-list 'completion-category-overrides '(eglot (styles orderless))))
@@ -551,16 +551,11 @@ Note: the commit must be pushed for the link to resolve on GitHub."
 ;; ============================================================
 ;; JavaScript / Dockerfile (組み込み ts-mode)
 ;; ============================================================
-(use-package js
-  :ensure nil
-  :custom (js-indent-level 2))
-
 (use-package js-ts-mode
   :ensure nil
-  :hook (js-ts-mode . eglot-ensure))
-
-(use-package dockerfile-ts-mode
-  :ensure nil)
+  :hook (js-ts-mode . (lambda ()
+                  (when (executable-find "typescript-language-server")
+                    (eglot-ensure)))))
 
 ;; ============================================================
 ;; web-mode (HTML と Vue のみ)
