@@ -452,7 +452,7 @@ Note: the commit must be pushed for the link to resolve on GitHub."
   (add-to-list 'eglot-server-programs
                '((ruby-mode ruby-ts-mode) . ("ruby-lsp")))
   (add-to-list 'eglot-server-programs
-               '((typescript-ts-mode tsx-ts-mode web-mode) . ("typescript-language-server" "--stdio")))
+               '((js-ts-mode typescript-ts-mode tsx-ts-mode web-mode) . ("typescript-language-server" "--stdio")))
   ;; eglot + corfu の補完スタイル
   ;; setq だと orderless 側で設定した file の override を破壊するので add-to-list
   (add-to-list 'completion-category-overrides '(eglot (styles orderless))))
@@ -478,7 +478,7 @@ Note: the commit must be pushed for the link to resolve on GitHub."
   ;; treesit-language-available-p を呼ぶ。未インストールの grammar は
   ;; 1つあたり ~0.1 秒かかり、全 62 言語だと数秒ブロックするため、
   ;; 使う言語に絞る。新しい言語を使うときはここに追加する。
-  (treesit-auto-langs '(bash json ruby tsx typescript yaml))
+  (treesit-auto-langs '(bash dockerfile javascript json ruby tsx typescript yaml))
   :config
   (treesit-auto-add-to-auto-mode-alist 'all)
   (global-treesit-auto-mode))
@@ -547,6 +547,20 @@ Note: the commit must be pushed for the link to resolve on GitHub."
   :hook
   ((typescript-ts-mode . eglot-ensure)
    (tsx-ts-mode        . eglot-ensure)))
+
+;; ============================================================
+;; JavaScript / Dockerfile (組み込み ts-mode)
+;; ============================================================
+(use-package js
+  :ensure nil
+  :custom (js-indent-level 2))
+
+(use-package js-ts-mode
+  :ensure nil
+  :hook (js-ts-mode . eglot-ensure))
+
+(use-package dockerfile-ts-mode
+  :ensure nil)
 
 ;; ============================================================
 ;; web-mode (HTML と Vue のみ)
