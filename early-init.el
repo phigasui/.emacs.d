@@ -43,6 +43,8 @@
 (push '(tool-bar-lines . 0) default-frame-alist)
 (push '(vertical-scroll-bars . nil) default-frame-alist)
 (setq frame-inhibit-implied-resize t)
+;; タイル型 WM (alpatile / yabai 等) でピクセル単位のリサイズ・タイリングを可能にする
+(setq frame-resize-pixelwise t)
 ;; macOS のメニューバーはグローバルなので menu-bar-lines は触らない
 
 ;;; early-init.el ends here
